@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import { ErrorCodeIntake } from '@/components/ErrorCodeIntake'
 import { ServiceCard } from '@/components/ServiceCard'
@@ -55,6 +56,46 @@ export default function HomePage() {
               Available
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Inside the lab */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="max-w-2xl">
+          <p className="eyebrow">Inside the Laboratory</p>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-lab-text sm:text-3xl">
+            Real diagnostics, under magnification.
+          </h2>
+        </div>
+        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+          <figure className="panel overflow-hidden">
+            <div className="relative aspect-[4/3]">
+              <Image
+                src="/images/lab/microsoldering-inspection.jpg"
+                alt="Technician performing component-level microsoldering repair on a circuit board under a digital microscope"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+            <figcaption className="border-t border-lab-line px-4 py-3 text-xs uppercase tracking-wide text-lab-muted">
+              Microsoldering &amp; component-level rework under magnification
+            </figcaption>
+          </figure>
+          <figure className="panel overflow-hidden">
+            <div className="relative aspect-[4/3]">
+              <Image
+                src="/images/lab/board-diagnostic-review.jpg"
+                alt="Technician reviewing PCB diagnostic imaging on a lab workstation monitor"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+            <figcaption className="border-t border-lab-line px-4 py-3 text-xs uppercase tracking-wide text-lab-muted">
+              Board-level diagnostic review and component mapping
+            </figcaption>
+          </figure>
         </div>
       </section>
 

@@ -17,8 +17,39 @@ datasource db {
 enum UserRole {
   SUPER_ADMIN
   ADMIN
+  OWNER
+  MANAGER
+  SALES
   TECHNICIAN
   FRONT_DESK
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum PriceAction {
+  INCREASE
+  DECREASE
+  MAINTAIN
+  REQUIRE_DIAGNOSTIC_FEE
+  MANUAL_REVIEW
+}
+
+enum RecommendationStatus {
+  PENDING_REVIEW
+  AUTO_APPROVED
+  APPROVED
+  REJECTED
+  EDITED
+}
+
+enum AgentName {
+  ORCHESTRATOR
+  COST_AGENT
+  PRICING_AGENT
 }
 
 enum RepairStatus {
@@ -89,30 +120,34 @@ enum ContactSubmissionType {
 // ---------------------------------------------------------------------------
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String
-  passwordHash  String
-  role          UserRole  @default(TECHNICIAN)
-  isActive      Boolean   @default(true)
-  lastLoginAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         UserRole  @default(TECHNICIAN)
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  technician    Technician?
-  auditLogs     AuditLog[]
+  technician Technician?
+  auditLogs  AuditLog[]
+
+  updatedPricingRules     PricingRule[]           @relation("PricingRuleUpdatedBy")
+  reviewedRecommendations PricingRecommendation[] @relation("RecommendationReviewedBy")
+  updatedSystemSettings   SystemSetting[]         @relation("SystemSettingUpdatedBy")
 
   @@index([email])
 }
 
 model Customer {
-  id             String    @id @default(cuid())
-  name           String
-  email          String    @unique
-  phone          String?
-  company        String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  company   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   businessAccount   BusinessAccount? @relation(fields: [businessAccountId], references: [id])
   businessAccountId String?
@@ -125,36 +160,38 @@ model Customer {
 }
 
 model BusinessAccount {
-  id                 String   @id @default(cuid())
-  shopName           String
-  contactName        String
-  email              String   @unique
-  phone              String?
-  website            String?
-  monthlyVolume      String?
-  equipmentTypes     String?
-  outsourcingNeeds   String?
-  accountType        String   @default("trade") // trade | fleet | insurance | refurbisher
-  isApproved         Boolean  @default(false)
-  notes              String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id               String   @id @default(cuid())
+  shopName         String
+  contactName      String
+  email            String   @unique
+  phone            String?
+  website          String?
+  monthlyVolume    String?
+  equipmentTypes   String?
+  outsourcingNeeds String?
+  accountType      String   @default("trade") // trade | fleet | insurance | refurbisher
+  isApproved       Boolean  @default(false)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  customers          Customer[]
+  customers Customer[]
 
   @@index([email])
 }
 
 model Technician {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  title     String?
-  bio       String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id                   String   @id @default(cuid())
+  user                 User     @relation(fields: [userId], references: [id])
+  userId               String   @unique
+  title                String?
+  bio                  String?
+  isActive             Boolean  @default(true)
+  hourlyCostCents      Int?
+  capacityHoursPerWeek Float?
+  createdAt            DateTime @default(now())
 
-  repairs   Repair[]
+  repairs Repair[]
 }
 
 // ---------------------------------------------------------------------------
@@ -164,45 +201,45 @@ model Technician {
 // ---------------------------------------------------------------------------
 
 model ServiceCategory {
-  id          String    @id @default(cuid())
-  slug        String    @unique
+  id          String   @id @default(cuid())
+  slug        String   @unique
   name        String
   description String?
-  sortOrder   Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  services    Service[]
+  services Service[]
 }
 
 model Service {
-  id             String            @id @default(cuid())
-  slug           String            @unique
-  name           String
-  shortSummary   String
-  metaTitle      String?
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  shortSummary    String
+  metaTitle       String?
   metaDescription String?
-  isActive       Boolean           @default(true)
-  sortOrder      Int               @default(0)
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  category       ServiceCategory   @relation(fields: [categoryId], references: [id])
-  categoryId     String
+  category   ServiceCategory @relation(fields: [categoryId], references: [id])
+  categoryId String
 
   @@index([categoryId])
 }
 
 model Location {
-  id           String   @id @default(cuid())
-  slug         String   @unique
-  city         String
-  state        String   @default("TX")
-  zipCodes     String[]
-  headline     String
-  summary      String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  city      String
+  state     String   @default("TX")
+  zipCodes  String[]
+  headline  String
+  summary   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ---------------------------------------------------------------------------
@@ -218,49 +255,55 @@ model Device {
   partNumber   String?
   createdAt    DateTime          @default(now())
 
-  repair       Repair?
+  repair Repair?
 }
 
 model Repair {
-  id                 String            @id @default(cuid())
-  referenceCode      String            @unique
-  status             RepairStatus      @default(NEW)
-  servicePreference  ServicePreference
+  id                String            @id @default(cuid())
+  referenceCode     String            @unique
+  status            RepairStatus      @default(NEW)
+  servicePreference ServicePreference
 
-  customer           Customer          @relation(fields: [customerId], references: [id])
-  customerId         String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
 
-  device             Device            @relation(fields: [deviceId], references: [id])
-  deviceId           String            @unique
+  device   Device @relation(fields: [deviceId], references: [id])
+  deviceId String @unique
 
-  errorCode          String?
-  symptoms           String
-  problemStartedAt   String?
-  previousAttempts   String?
-  hasLiquidDamage    Boolean           @default(false)
-  hasPhysicalDamage  Boolean           @default(false)
-  hasPowerIssue      Boolean           @default(false)
-  isIntermittent     Boolean           @default(false)
-  hasNoDisplay       Boolean           @default(false)
-  hasBootFailure     Boolean           @default(false)
+  errorCode         String?
+  symptoms          String
+  problemStartedAt  String?
+  previousAttempts  String?
+  hasLiquidDamage   Boolean @default(false)
+  hasPhysicalDamage Boolean @default(false)
+  hasPowerIssue     Boolean @default(false)
+  isIntermittent    Boolean @default(false)
+  hasNoDisplay      Boolean @default(false)
+  hasBootFailure    Boolean @default(false)
 
-  assignedTechnician Technician?       @relation(fields: [technicianId], references: [id])
+  assignedTechnician Technician? @relation(fields: [technicianId], references: [id])
   technicianId       String?
 
-  internalNotes      String?
+  repairCategory           RepairCategory? @relation(fields: [repairCategoryId], references: [id])
+  repairCategoryId         String?
+  estimatedTechnicianHours Float?
 
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  internalNotes String?
 
-  diagnostics        Diagnostic[]
-  quotes             Quote[]
-  attachments         Attachment[]
-  messages            Message[]
-  statusHistory       RepairStatusEvent[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  diagnostics            Diagnostic[]
+  quotes                 Quote[]
+  attachments            Attachment[]
+  messages               Message[]
+  statusHistory          RepairStatusEvent[]
+  pricingRecommendations PricingRecommendation[]
 
   @@index([customerId])
   @@index([status])
   @@index([referenceCode])
+  @@index([repairCategoryId])
 }
 
 model RepairStatusEvent {
@@ -275,14 +318,14 @@ model RepairStatusEvent {
 }
 
 model Diagnostic {
-  id          String   @id @default(cuid())
-  repair      Repair   @relation(fields: [repairId], references: [id])
-  repairId    String
-  findings    String
-  rootCause   String?
+  id           String   @id @default(cuid())
+  repair       Repair   @relation(fields: [repairId], references: [id])
+  repairId     String
+  findings     String
+  rootCause    String?
   isRepairable Boolean?
-  performedBy String?
-  createdAt   DateTime @default(now())
+  performedBy  String?
+  createdAt    DateTime @default(now())
 
   @@index([repairId])
 }
@@ -304,29 +347,29 @@ model Quote {
 }
 
 model Attachment {
-  id          String         @id @default(cuid())
-  repair      Repair         @relation(fields: [repairId], references: [id])
-  repairId    String
-  kind        AttachmentKind
-  storageKey  String
-  fileName    String
-  mimeType    String
-  sizeBytes   Int
-  uploadedBy  String?
-  createdAt   DateTime       @default(now())
+  id         String         @id @default(cuid())
+  repair     Repair         @relation(fields: [repairId], references: [id])
+  repairId   String
+  kind       AttachmentKind
+  storageKey String
+  fileName   String
+  mimeType   String
+  sizeBytes  Int
+  uploadedBy String?
+  createdAt  DateTime       @default(now())
 
   @@index([repairId])
 }
 
 model Message {
-  id        String        @id @default(cuid())
-  repair    Repair        @relation(fields: [repairId], references: [id])
-  repairId  String
-  customer  Customer?     @relation(fields: [customerId], references: [id])
+  id         String        @id @default(cuid())
+  repair     Repair        @relation(fields: [repairId], references: [id])
+  repairId   String
+  customer   Customer?     @relation(fields: [customerId], references: [id])
   customerId String?
-  sender    MessageSender
-  body      String
-  createdAt DateTime      @default(now())
+  sender     MessageSender
+  body       String
+  createdAt  DateTime      @default(now())
 
   @@index([repairId])
 }
@@ -336,14 +379,14 @@ model Message {
 // ---------------------------------------------------------------------------
 
 model FAQ {
-  id        String   @id @default(cuid())
-  question  String
-  answer    String
-  category  String?
-  sortOrder Int      @default(0)
-  isPublished Boolean @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  question    String
+  answer      String
+  category    String?
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model BlogPost {
@@ -401,4 +444,146 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([actorId])
+}
+
+// ---------------------------------------------------------------------------
+// Revenue / Pricing / Profit Optimization platform
+// See /docs/DATABASE_ARCHITECTURE.md, /docs/PRICING_ENGINE.md,
+// /docs/AGENT_SPECIFICATIONS.md for the full design rationale.
+// ---------------------------------------------------------------------------
+
+model RepairCategory {
+  id                     String    @id @default(cuid())
+  slug                   String    @unique
+  name                   String
+  description            String?
+  riskLevel              RiskLevel @default(MEDIUM)
+  defaultLaborHours      Float
+  defaultDiagnosticHours Float     @default(0.5)
+  defaultPartsCostCents  Int       @default(0)
+  isActive               Boolean   @default(true)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  repairs         Repair[]
+  recommendations PricingRecommendation[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model PricingRule {
+  id                           String   @id @default(cuid())
+  key                          String   @unique @default("global")
+  minimumMarginPercent         Float    @default(0.35)
+  targetMarginPercent          Float    @default(0.55)
+  minimumDiagnosticFeeCents    Int      @default(4900)
+  minimumRepairPriceCents      Int      @default(4900)
+  maximumDiscountPercent       Float    @default(0.15)
+  rushMultiplier               Float    @default(1.25)
+  complexityMultiplierMax      Float    @default(1.30)
+  riskMultiplierMax            Float    @default(1.20)
+  premiumFactor                Float    @default(1.15)
+  maximumJustifiedMultiplier   Float    @default(1.6)
+  warrantyReservePercent       Float    @default(0.04)
+  overheadAllocationPercent    Float    @default(0.08)
+  paymentProcessingPercent     Float    @default(0.029)
+  paymentProcessingFixedCents  Int      @default(30)
+  technicianHourlyCostCents    Int      @default(4500)
+  capacityHighThresholdPercent Float    @default(0.90)
+  capacityLowThresholdPercent  Float    @default(0.50)
+  approvalConfidenceThreshold  Float    @default(0.55)
+  manualReviewOverride         Boolean  @default(false)
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+  updatedBy                    User?    @relation("PricingRuleUpdatedBy", fields: [updatedById], references: [id])
+  updatedById                  String?
+
+  @@index([key])
+}
+
+model PricingRecommendation {
+  id               String          @id @default(cuid())
+  repairCategory   RepairCategory? @relation(fields: [repairCategoryId], references: [id])
+  repairCategoryId String?
+  repair           Repair?         @relation(fields: [repairId], references: [id])
+  repairId         String?
+
+  partsCostCents            Int
+  laborHours                Float
+  technicianHourlyCostCents Int
+  shippingCostCents         Int
+  paymentCostCents          Int
+  consumablesCostCents      Int
+  warrantyReserveCents      Int
+  overheadCents             Int
+  estimatedTotalCostCents   Int
+
+  priceFloorCents        Int
+  competitivePriceCents  Int?
+  recommendedPriceCents  Int
+  premiumPriceCents      Int
+  maxJustifiedPriceCents Int
+
+  grossProfitCents                Int
+  grossMarginPercent              Float
+  profitPerTechnicianHourCents    Int?
+  estimatedAcceptanceProbability  Float
+  expectedContributionProfitCents Int
+  confidence                      Float
+
+  priceAction           PriceAction
+  reasoning             String[]
+  riskFlags             String[]
+  requiresHumanApproval Boolean
+
+  status          RecommendationStatus @default(PENDING_REVIEW)
+  finalPriceCents Int?
+  reviewedBy      User?                @relation("RecommendationReviewedBy", fields: [reviewedById], references: [id])
+  reviewedById    String?
+  reviewedAt      DateTime?
+  reviewNote      String?
+
+  createdAt DateTime @default(now())
+
+  agentRuns AgentRun[]
+
+  @@index([repairCategoryId])
+  @@index([repairId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AgentRun {
+  id                String    @id @default(cuid())
+  agentName         AgentName
+  taskDescription   String
+  provider          String
+  model             String?
+  inputSummary      Json
+  outputSummary     Json
+  confidence        Float?
+  latencyMs         Int
+  tokenEstimate     Int?
+  costEstimateCents Int?
+  succeeded         Boolean
+  errorMessage      String?
+  createdAt         DateTime  @default(now())
+
+  pricingRecommendation   PricingRecommendation? @relation(fields: [pricingRecommendationId], references: [id])
+  pricingRecommendationId String?
+
+  @@index([agentName])
+  @@index([pricingRecommendationId])
+  @@index([createdAt])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   User?    @relation("SystemSettingUpdatedBy", fields: [updatedById], references: [id])
+  updatedById String?
 }
