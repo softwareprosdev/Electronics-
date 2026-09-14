@@ -17,10 +17,10 @@ const config: Config = {
           line: '#28323b',
           text: '#e4e9ec', // ~15.7:1 vs bg
           muted: '#a3b0b8', // ~8.7:1 vs bg
-          accent: '#4fb8ab', // muted teal, ~8.0:1 vs bg (was neon mint #37e6c4)
-          accent2: '#6b9bd1', // muted steel blue, ~6.6:1 vs bg (was #5ab8ff)
-          warn: '#d99a52', // muted amber, ~8.0:1 vs bg
-          danger: '#d97070', // muted red, ~6.0:1 vs bg
+          accent: '#7c93a8', // neutral slate blue-gray, ~6.0:1 vs bg (near-zero saturation)
+          accent2: '#9aacbd', // lighter neutral slate, ~8.3:1 vs bg
+          warn: '#b8935e', // muted ochre, ~6.8:1 vs bg
+          danger: '#b36b62', // muted terracotta, ~4.8:1 vs bg
         },
       },
       fontFamily: {
@@ -29,13 +29,13 @@ const config: Config = {
       },
       backgroundImage: {
         'circuit-grid':
-          'linear-gradient(rgba(79,184,171,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(79,184,171,0.05) 1px, transparent 1px)',
+          'linear-gradient(rgba(124,147,168,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(124,147,168,0.05) 1px, transparent 1px)',
       },
       backgroundSize: {
         grid: '32px 32px',
       },
       boxShadow: {
-        glow: '0 0 0 1px rgba(79,184,171,0.25)',
+        glow: '0 0 0 1px rgba(124,147,168,0.25)',
       },
     },
   },
