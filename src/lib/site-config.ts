@@ -2,9 +2,9 @@ export const siteConfig = {
   name: 'Advanced Electronics Repair & Reprogramming Laboratory',
   shortName: 'Advanced Electronics Repair Lab',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-  phone: process.env.NEXT_PUBLIC_BUSINESS_PHONE || '+19561234567',
-  phoneDisplay: process.env.NEXT_PUBLIC_BUSINESS_PHONE_DISPLAY || '(956) 123-4567',
-  email: process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'repairs@example-electronics-lab.com',
+  phone: process.env.NEXT_PUBLIC_BUSINESS_PHONE || '+19563921440',
+  phoneDisplay: process.env.NEXT_PUBLIC_BUSINESS_PHONE_DISPLAY || '(956) 392-1440',
+  email: process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'repairs@softwarepros.org',
   addressLocality: 'Harlingen',
   addressRegion: 'TX',
   serviceArea: [
