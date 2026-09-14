@@ -238,7 +238,7 @@ export function RepairRequestForm() {
               onChange={handleFileChange}
               className="mt-2 w-full rounded-sm border border-dashed border-lab-line bg-lab-panel2 px-3 py-6 text-sm text-lab-muted file:mr-4 file:rounded-sm file:border-0 file:bg-lab-accent file:px-4 file:py-2 file:text-xs file:font-semibold file:uppercase file:text-lab-bg"
             />
-            <p className="mt-2 text-xs text-lab-muted">Up to 6 files, 25MB each.</p>
+            <p className="mt-2 text-xs text-lab-muted">Up to 6 files, 8MB each.</p>
           </div>
           {files.length > 0 && (
             <ul className="space-y-2">

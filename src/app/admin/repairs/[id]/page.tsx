@@ -6,12 +6,18 @@ import { RepairStatusForm } from '@/components/admin/RepairStatusForm'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminRepairDetailPage({ params }: { params: { id: string } }) {
+export default async function AdminRepairDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const session = await getAdminSession()
   if (!session) redirect('/admin/login')
 
+  const { id } = await params
+
   const repair = await prisma.repair.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       customer: true,
       device: true,

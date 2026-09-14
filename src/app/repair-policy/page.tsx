@@ -27,7 +27,7 @@ const sections = [
     body: 'If diagnostics determine that a device, board, or module cannot be repaired, we will communicate that finding along with any relevant details. Devices, boards, or modules can be returned to you as-is.',
   },
   {
-    title: 'Aviation, Automotive &amp; Identifier Services',
+    title: 'Aviation, Automotive & Identifier Services',
     body: 'Aviation equipment may be subject to regulatory, manufacturer, maintenance, documentation, and return-to-service requirements that remain the customer’s responsibility. Programming and module services, including automotive and device identifier work, are performed only where technically supported and legally authorized.',
   },
   {
@@ -46,10 +46,7 @@ export default function RepairPolicyPage() {
           {sections.map((section) => (
             <div key={section.title}>
               <h2 className="text-lg font-semibold text-lab-text">{section.title}</h2>
-              <p
-                className="mt-2 text-sm leading-relaxed text-lab-muted"
-                dangerouslySetInnerHTML={{ __html: section.body }}
-              />
+              <p className="mt-2 text-sm leading-relaxed text-lab-muted">{section.body}</p>
             </div>
           ))}
         </div>

@@ -4,7 +4,7 @@ Production-grade website for a board-level and component-level electronics
 repair laboratory serving Harlingen, TX through Mission, TX and the Rio
 Grande Valley, with mail-in repair available nationwide.
 
-Built with Next.js 14 (App Router), TypeScript, Tailwind CSS, Prisma, and
+Built with Next.js 15 (App Router), TypeScript, Tailwind CSS, Prisma, and
 PostgreSQL.
 
 ## Table of Contents
@@ -48,7 +48,7 @@ The site is a single Next.js application combining:
 
 | Concern        | Choice                                             |
 | --------------- | --------------------------------------------------- |
-| Framework       | Next.js 14 (App Router, Route Handlers)             |
+| Framework       | Next.js 15 (App Router, Route Handlers)             |
 | Language        | TypeScript (strict mode)                            |
 | Styling         | Tailwind CSS (dark, technical/laboratory theme)     |
 | Database        | PostgreSQL                                          |
@@ -182,7 +182,7 @@ detection to the caller.
 
 | Route                              | Method | Purpose                                                   |
 | ----------------------------------- | ------ | ----------------------------------------------------------- |
-| `/api/repair-requests`             | POST   | Multi-step repair request submission (multipart, up to 6 files, 25MB each, MIME-validated) |
+| `/api/repair-requests`             | POST   | Multi-step repair request submission (multipart, up to 6 files, 8MB each, MIME- and signature-validated) |
 | `/api/contact`                     | POST   | General/business/partner/media contact form                |
 | `/api/business-accounts`           | POST   | Trade account request (upserts by email)                   |
 | `/api/admin/login`                 | POST   | Admin session login (bcrypt + signed JWT cookie)            |
@@ -227,18 +227,76 @@ authenticated customer-facing view.
 
 ## Security
 
+Audited against the OWASP Top 10 / ASVS and NIST SP 800-53/63B hardening
+guidance. Findings and fixes:
+
+- **Dependency CVEs (critical)** — upgraded Next.js 14.2.35 → 15.5.25,
+  which was carrying dozens of published advisories including two
+  unauthenticated **remote code execution** CVEs
+  ([GHSA-p293-qw3h-jr36](https://github.com/advisories/GHSA-p293-qw3h-jr36),
+  [GHSA-2xp9-vwfh-vxw4](https://github.com/advisories/GHSA-2xp9-vwfh-vxw4)).
+  One residual `npm audit` finding remains (PostCSS, bundled inside Next's
+  own build tooling) — it only processes this repo's own trusted CSS at
+  build time, never attacker-controlled input, so it's tracked but not
+  urgent; closing it fully requires ESLint 9 (Next 16's peer requirement).
+- **XSS defense-in-depth** — removed the one non-essential
+  `dangerouslySetInnerHTML` call in the codebase; the remaining one
+  (`JsonLd`, for `<script type="application/ld+json">` structured data)
+  escapes `<`, `>`, and U+2028/U+2029 to prevent `</script>` breakout, even
+  though its inputs are static site content today, not user input.
+- **CSRF** — every state-changing API route (`repair-requests`, `contact`,
+  `business-accounts`, `admin/login`, `admin/logout`,
+  `admin/repairs/[id]`) now verifies the request's `Origin` (falling back
+  to `Referer`) matches the app's own host before processing, per the
+  OWASP CSRF Cheat Sheet, on top of the existing `sameSite=lax` cookie.
+- **Auth timing side-channel** — `/api/admin/login` used to skip the
+  bcrypt comparison entirely for a nonexistent/inactive email, making the
+  endpoint measurably faster for unknown emails than known ones (a classic
+  user-enumeration timing oracle). It now always runs `bcrypt.compare`
+  against a fixed dummy hash so response time doesn't leak account
+  existence.
+- **Broken access control** — `/api/business-accounts` used to `upsert` by
+  email with no authentication, so anyone who learned an existing trade
+  partner's email could silently overwrite their approved business
+  profile. It now refuses to mutate a record once `isApproved` is true.
+- **File upload validation** — a client's declared `file.type` is
+  spoofable metadata; uploads are now verified against the actual file
+  signature ("magic bytes") for every allowed type before being written to
+  disk, not just the declared MIME type. The storage path is also built
+  entirely from a fixed MIME→extension map and a sanitized scope key
+  (never from the client-supplied filename), with a resolved-path
+  containment check as defense-in-depth.
+- **Resource-consumption limits (OWASP API4)** — added explicit
+  `Content-Length` pre-checks on all POST routes so oversized bodies are
+  rejected before being parsed, and lowered the per-file attachment cap
+  from 25MB to 8MB to match realistic serverless request-body limits.
+- **Availability** — a failed attachment (invalid file, or a storage
+  backend outage) no longer aborts the entire repair-request submission;
+  it's skipped and logged instead, so a customer's report never gets lost
+  over one broken photo upload.
+- **Weak key length** — `ADMIN_SESSION_SECRET` is now required to be
+  32+ characters (NIST SP 800-63B / RFC 2104's minimum for an HMAC-SHA256
+  key), up from the previous unenforced 16.
+- **Rate limiting reliability** — the limiter now uses a shared
+  Upstash Redis counter when `UPSTASH_REDIS_REST_URL`/`_TOKEN` are
+  configured, since a plain in-memory `Map` doesn't reliably enforce a
+  limit across separate serverless function invocations. Falls back to
+  in-memory for local dev / single-instance Docker.
 - Zod validation on every form submission (client and server).
-- Per-IP rate limiting on all POST routes (in-memory by default; swap for
-  Upstash Redis in multi-instance deployments).
 - Honeypot fields on all public forms.
 - Admin sessions: bcrypt password hashing, signed JWT cookies
   (`httpOnly`, `sameSite=lax`, `secure` in production), route protection
   via middleware.
-- File uploads: MIME allowlist, 25MB size cap, private storage (never
-  publicly addressable); the storage adapter is written to be swapped for a
-  real S3-compatible bucket without touching call sites.
-- Security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options,
-  Referrer-Policy, Permissions-Policy) applied globally.
+- Security headers applied globally: CSP, HSTS, X-Frame-Options,
+  X-Content-Type-Options, Referrer-Policy, Permissions-Policy,
+  Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy, and
+  X-Permitted-Cross-Domain-Policies.
+  `script-src` keeps `'unsafe-inline'` as a deliberate, documented
+  trade-off: a per-request CSP nonce would force every statically
+  generated page into dynamic rendering (see `next.config.mjs` for the
+  full rationale) and there is no `dangerouslySetInnerHTML` anywhere in
+  the app that renders anything other than static, developer-authored
+  content.
 - `AuditLog` records admin logins and repair status/notes changes.
 - No customer or diagnostic data is exposed on public pages.
 
