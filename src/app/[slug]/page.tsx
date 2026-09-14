@@ -10,7 +10,7 @@ import { faqs } from '@/lib/data/faqs'
 import { buildMetadata, faqJsonLd, serviceJsonLd } from '@/lib/seo'
 
 interface PageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 export function generateStaticParams() {
@@ -19,8 +19,9 @@ export function generateStaticParams() {
 
 export const dynamicParams = false
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const service = getServiceBySlug(params.slug)
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const service = getServiceBySlug(slug)
   if (!service) return {}
 
   return buildMetadata({
@@ -30,8 +31,9 @@ export function generateMetadata({ params }: PageProps): Metadata {
   })
 }
 
-export default function ServicePage({ params }: PageProps) {
-  const service = getServiceBySlug(params.slug)
+export default async function ServicePage({ params }: PageProps) {
+  const { slug } = await params
+  const service = getServiceBySlug(slug)
   if (!service) notFound()
 
   const relatedFaqs = faqs

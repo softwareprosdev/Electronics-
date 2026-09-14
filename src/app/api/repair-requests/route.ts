@@ -6,6 +6,9 @@ import { getClientKey, rateLimit } from '@/lib/rate-limit'
 import { sendEmail } from '@/lib/notify'
 import { siteConfig } from '@/lib/site-config'
 import { AttachmentValidationError, storeAttachment } from '@/lib/storage'
+import { isTrustedOrigin } from '@/lib/csrf'
+
+const MAX_REQUEST_BODY_BYTES = 24 * 1024 * 1024 // 24MB — leaves headroom under typical platform limits
 
 function generateReferenceCode(): string {
   return `REP-${randomUUID().slice(0, 8).toUpperCase()}`
@@ -18,8 +21,17 @@ function attachmentKindFromMime(mimeType: string): 'PHOTO' | 'VIDEO' | 'DOCUMENT
 }
 
 export async function POST(request: Request) {
+  if (!isTrustedOrigin(request)) {
+    return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
+  }
+
+  const contentLength = Number(request.headers.get('content-length') || 0)
+  if (contentLength > MAX_REQUEST_BODY_BYTES) {
+    return NextResponse.json({ error: 'Request is too large.' }, { status: 413 })
+  }
+
   const clientKey = getClientKey(request)
-  const limit = rateLimit(`repair-request:${clientKey}`, { limit: 5, windowMs: 10 * 60_000 })
+  const limit = await rateLimit(`repair-request:${clientKey}`, { limit: 5, windowMs: 10 * 60_000 })
   if (!limit.success) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again shortly.' },
@@ -131,12 +143,12 @@ export async function POST(request: Request) {
           },
         })
       } catch (error) {
-        if (error instanceof AttachmentValidationError) {
-          // Skip invalid files rather than failing the whole submission;
-          // the repair request itself is still valid.
-          continue
+        // Skip a failed attachment (invalid file, or a storage backend
+        // issue) rather than failing the whole submission — the repair
+        // request record itself is already valid and must not be lost.
+        if (!(error instanceof AttachmentValidationError)) {
+          console.error('Failed to store attachment for repair', repair.id, error)
         }
-        throw error
       }
     }
 

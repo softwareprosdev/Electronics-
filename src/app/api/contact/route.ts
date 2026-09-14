@@ -4,10 +4,22 @@ import { contactSubmissionSchema } from '@/lib/validation'
 import { getClientKey, rateLimit } from '@/lib/rate-limit'
 import { sendEmail } from '@/lib/notify'
 import { siteConfig } from '@/lib/site-config'
+import { isTrustedOrigin } from '@/lib/csrf'
+
+const MAX_REQUEST_BODY_BYTES = 32 * 1024 // plain JSON, generous but bounded
 
 export async function POST(request: Request) {
+  if (!isTrustedOrigin(request)) {
+    return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
+  }
+
+  const contentLength = Number(request.headers.get('content-length') || 0)
+  if (contentLength > MAX_REQUEST_BODY_BYTES) {
+    return NextResponse.json({ error: 'Request is too large.' }, { status: 413 })
+  }
+
   const clientKey = getClientKey(request)
-  const limit = rateLimit(`contact:${clientKey}`, { limit: 8, windowMs: 10 * 60_000 })
+  const limit = await rateLimit(`contact:${clientKey}`, { limit: 8, windowMs: 10 * 60_000 })
   if (!limit.success) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again shortly.' },

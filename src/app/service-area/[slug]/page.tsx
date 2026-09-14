@@ -9,7 +9,7 @@ import { homepageServiceCards } from '@/lib/data/services'
 import { buildMetadata, localBusinessJsonLd } from '@/lib/seo'
 
 interface PageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 export function generateStaticParams() {
@@ -18,8 +18,9 @@ export function generateStaticParams() {
 
 export const dynamicParams = false
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const location = getLocationBySlug(params.slug)
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const location = getLocationBySlug(slug)
   if (!location) return {}
 
   return buildMetadata({
@@ -29,8 +30,9 @@ export function generateMetadata({ params }: PageProps): Metadata {
   })
 }
 
-export default function LocationPage({ params }: PageProps) {
-  const location = getLocationBySlug(params.slug)
+export default async function LocationPage({ params }: PageProps) {
+  const { slug } = await params
+  const location = getLocationBySlug(slug)
   if (!location) notFound()
 
   return (

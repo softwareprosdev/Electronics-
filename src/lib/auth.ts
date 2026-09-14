@@ -6,9 +6,11 @@ const SESSION_DURATION_SECONDS = 60 * 60 * 8 // 8 hours
 
 function getSecretKey() {
   const secret = process.env.ADMIN_SESSION_SECRET
-  if (!secret || secret.length < 16) {
+  // NIST SP 800-63B / RFC 2104 recommend an HMAC key at least as long as
+  // the underlying hash output (32 bytes for HMAC-SHA256 / "HS256").
+  if (!secret || secret.length < 32) {
     throw new Error(
-      'ADMIN_SESSION_SECRET must be set to a long random string (see .env.example).',
+      'ADMIN_SESSION_SECRET must be set to a random string of at least 32 characters (see .env.example).',
     )
   }
   return new TextEncoder().encode(secret)

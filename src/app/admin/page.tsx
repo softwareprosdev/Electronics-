@@ -23,15 +23,16 @@ const statusOrder = [
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: { status?: string }
+  searchParams: Promise<{ status?: string }>
 }) {
   const session = await getAdminSession()
   if (!session) redirect('/admin/login')
 
-  const statusFilter = searchParams.status
+  const { status: rawStatus } = await searchParams
+  const statusFilter = statusOrder.find((status) => status === rawStatus)
 
   const repairs = await prisma.repair.findMany({
-    where: statusFilter ? { status: statusFilter as (typeof statusOrder)[number] } : undefined,
+    where: statusFilter ? { status: statusFilter } : undefined,
     include: { customer: true, device: true },
     orderBy: { createdAt: 'desc' },
     take: 50,
