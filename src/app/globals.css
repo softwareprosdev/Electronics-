@@ -40,18 +40,18 @@ body {
   }
 
   .circuit-bg {
-    background-image: linear-gradient(rgba(79, 184, 171, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(79, 184, 171, 0.05) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(124, 147, 168, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124, 147, 168, 0.05) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 }
 
 ::selection {
-  background: rgba(79, 184, 171, 0.35);
+  background: rgba(124, 147, 168, 0.35);
   color: #0b0e12;
 }
 
 :focus-visible {
-  outline: 2px solid #4fb8ab;
+  outline: 2px solid #7c93a8;
   outline-offset: 2px;
 }
