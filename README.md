@@ -10,6 +10,7 @@ PostgreSQL.
 ## Table of Contents
 
 - [Architecture](#architecture)
+- [Revenue, Pricing & Profit Optimization Platform](#revenue-pricing--profit-optimization-platform)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
@@ -43,6 +44,29 @@ The site is a single Next.js application combining:
    database schema (`Customer`, `Repair`, `Quote`, `Message`, `Attachment`)
    is already shaped to support a future self-service portal without
    migration changes.
+
+## Revenue, Pricing & Profit Optimization Platform
+
+Layered on top of the marketing site and repair-ticket system is a
+deterministic pricing/cost engine plus an AI agent layer that explains and
+contextualizes it — never one that computes it. Full design docs live in
+`/docs`:
+
+- [`REVENUE_AI_ARCHITECTURE.md`](docs/REVENUE_AI_ARCHITECTURE.md) — system layers, AI provider abstraction, agent logging, human approval
+- [`PRICING_ENGINE.md`](docs/PRICING_ENGINE.md) — the deterministic cost/pricing math, worked example, edge cases
+- [`AGENT_SPECIFICATIONS.md`](docs/AGENT_SPECIFICATIONS.md) — all 15 agents from the source spec: which 3 are real, and why the rest are documented rather than faked
+- [`DATABASE_ARCHITECTURE.md`](docs/DATABASE_ARCHITECTURE.md) — new Prisma models and why
+- [`SECURITY_MODEL.md`](docs/SECURITY_MODEL.md) — RBAC, CSRF, AI-specific risks (prompt injection, provider outage)
+- [`IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) — what's built vs. sequenced roadmap, and why
+
+**Try it**: sign in to `/admin` with a `SUPER_ADMIN`/`ADMIN`/`OWNER`/`MANAGER`
+account, then visit `/admin/pricing` to generate a recommendation (floor /
+competitive / recommended / premium price, margin, profit/hour, confidence,
+a "Why?" breakdown) and `/admin/pricing/rules` to edit the underlying
+business rules — nothing is hard-coded. Everything works with **zero AI
+spend**: leave `ANTHROPIC_API_KEY` unset and the engine still produces full
+recommendations, just with a code-generated explanation instead of an
+AI-written one.
 
 ## Tech Stack
 
@@ -113,6 +137,9 @@ The Prisma schema (`prisma/schema.prisma`) models:
   `Diagnostic`, `Quote`, `Attachment`, `Message`.
 - **Content**: `FAQ`, `BlogPost`, `Testimonial`, `ContactSubmission`.
 - **Audit**: `AuditLog`.
+- **Pricing/revenue platform**: `RepairCategory`, `PricingRule`,
+  `PricingRecommendation`, `AgentRun`, `SystemSetting` — see
+  [`docs/DATABASE_ARCHITECTURE.md`](docs/DATABASE_ARCHITECTURE.md).
 
 `Repair.status` moves through the full lifecycle specified for the
 business: `NEW → UNDER_REVIEW → DIAGNOSTIC_PENDING → DIAGNOSING →
@@ -149,9 +176,11 @@ referenced by it) before deploying — the default is empty.
 ## Project Structure
 
 ```
+docs/                   Revenue/pricing platform architecture docs
 prisma/
   schema.prisma        Data model
-  seed.ts               Seed script (admin user, categories, locations)
+  seed.ts               Seed script (admin user, categories, locations,
+                         repair categories, default pricing rule)
 src/
   app/
     page.tsx             Homepage
@@ -160,17 +189,24 @@ src/
     mail-in-repair/, business-services/, repair-shop-partner-program/,
     contact/, faq/, blog/, blog/[slug]/, request-repair/, portal/,
     privacy/, terms/, repair-policy/
-    admin/                Session-protected dashboard (login, queue, detail)
+    admin/                Session-protected dashboard (login, queue, detail,
+                           pricing/, pricing/rules/)
     api/                  Route handlers (repair-requests, contact,
                            business-accounts, admin/login, admin/logout,
-                           admin/repairs/[id])
+                           admin/repairs/[id], pricing/recommend,
+                           pricing/history, pricing/recommendations/[id],
+                           admin/pricing-rules, admin/repair-categories)
     sitemap.ts, robots.ts, not-found.tsx, error.tsx, loading.tsx
   components/            Shared UI (Header, Footer, forms, JSON-LD, etc.)
+    admin/                Pricing recommendation form/list, pricing rule form
   lib/
     data/                 Static content: services.ts, locations.ts,
                            faqs.ts, blog.ts
-    prisma.ts, auth.ts, validation.ts, rate-limit.ts, storage.ts,
-    notify.ts, seo.ts, site-config.ts
+    pricing/               Deterministic cost/pricing engine (pure, unit-tested)
+    ai/                    AI provider abstraction (Anthropic + no-op fallback)
+    agents/                Orchestrator, Cost Agent, Pricing Agent
+    prisma.ts, auth.ts, rbac.ts, validation.ts, rate-limit.ts, storage.ts,
+    notify.ts, seo.ts, site-config.ts, pricing-rule-store.ts
   middleware.ts           Protects /admin/* routes
 ```
 
@@ -188,6 +224,11 @@ detection to the caller.
 | `/api/admin/login`                 | POST   | Admin session login (bcrypt + signed JWT cookie)            |
 | `/api/admin/logout`                | POST   | Clears the admin session cookie                             |
 | `/api/admin/repairs/[id]`          | PATCH  | Update repair status / internal notes (session-protected)   |
+| `/api/pricing/recommend`           | POST   | Run the pricing orchestrator (Cost Agent + Pricing Agent), persist and return a `PricingRecommendation` (role-protected) |
+| `/api/pricing/history`             | GET    | List recent pricing recommendations, filterable by category/status (role-protected) |
+| `/api/pricing/recommendations/[id]`| PATCH  | Approve / reject / edit a pending recommendation (role-protected) |
+| `/api/admin/pricing-rules`         | GET/PUT| Read/update the global deterministic pricing rule set (PUT restricted to ADMIN/OWNER/SUPER_ADMIN) |
+| `/api/admin/repair-categories`     | GET/POST| List/create priceable repair categories (POST restricted to ADMIN/OWNER/SUPER_ADMIN) |
 
 ## Admin Dashboard
 
@@ -327,6 +368,17 @@ Verified against a local PostgreSQL instance:
 - [x] Admin repair queue lists submitted requests; detail page updates
       status and internal notes
 - [x] Docker `standalone` build produces a runnable server bundle
+- [x] `npm test` (Vitest) — 27 unit tests covering the deterministic cost
+      and pricing engines, including the exact worked example from
+      `docs/PRICING_ENGINE.md`
+- [x] `POST /api/pricing/recommend` → `PATCH /api/pricing/recommendations/[id]`
+      exercised end-to-end against a local PostgreSQL instance: generates a
+      recommendation, persists it with linked `AgentRun` rows, and approves
+      it
+- [x] `/admin/pricing` and `/admin/pricing/rules` render and are role-gated
+- [x] Pricing agent fails closed with zero AI provider configured (verified:
+      `AgentRun.succeeded = false`, `provider = "none"`, deterministic
+      narrative still returned, recommendation unaffected)
 
 Not exercised in this environment (no browser automation / real SMTP / S3
 available here): visual cross-browser QA, live email/SMS delivery, and
