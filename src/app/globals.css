@@ -14,13 +14,13 @@ html {
 }
 
 body {
-  background-color: #06090c;
-  color: #e7edf1;
+  background-color: #0b0e12;
+  color: #e4e9ec;
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-lab-accent px-6 py-3 text-sm font-semibold uppercase tracking-wide text-lab-bg transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lab-accent;
+    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-lab-accent px-6 py-3 text-sm font-semibold uppercase tracking-wide text-lab-bg transition hover:bg-lab-accent2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lab-accent;
   }
 
   .btn-secondary {
@@ -40,18 +40,18 @@ body {
   }
 
   .circuit-bg {
-    background-image: linear-gradient(rgba(55, 230, 196, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(55, 230, 196, 0.06) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(79, 184, 171, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79, 184, 171, 0.05) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 }
 
 ::selection {
-  background: rgba(55, 230, 196, 0.35);
-  color: #06090c;
+  background: rgba(79, 184, 171, 0.35);
+  color: #0b0e12;
 }
 
 :focus-visible {
-  outline: 2px solid #37e6c4;
+  outline: 2px solid #4fb8ab;
   outline-offset: 2px;
 }
