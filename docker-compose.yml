@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: electronics
+      POSTGRES_PASSWORD: electronics
+      POSTGRES_DB: electronics_repair
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U electronics -d electronics_repair']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://electronics:electronics@db:5432/electronics_repair?schema=public
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_BUSINESS_PHONE: '+19561234567'
+      NEXT_PUBLIC_BUSINESS_PHONE_DISPLAY: '(956) 123-4567'
+      NEXT_PUBLIC_BUSINESS_EMAIL: repairs@example-electronics-lab.com
+      ADMIN_SESSION_SECRET: change-this-to-a-long-random-string-in-production
+      ADMIN_EMAIL: admin@example-electronics-lab.com
+      # Generate with: node -e "require('bcryptjs').hash('yourpassword',12).then(console.log)"
+      ADMIN_PASSWORD_HASH: ''
+      EMAIL_PROVIDER: console
+      SMS_PROVIDER: console
+
+volumes:
+  db_data:

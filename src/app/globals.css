@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --font-inter: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #06090c;
+  color: #e7edf1;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-lab-accent px-6 py-3 text-sm font-semibold uppercase tracking-wide text-lab-bg transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lab-accent;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-lab-line px-6 py-3 text-sm font-semibold uppercase tracking-wide text-lab-text transition hover:border-lab-accent hover:text-lab-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lab-accent;
+  }
+
+  .btn-tertiary {
+    @apply inline-flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-wide text-lab-accent2 underline-offset-4 hover:underline;
+  }
+
+  .panel {
+    @apply rounded-sm border border-lab-line bg-lab-panel;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-lab-accent;
+  }
+
+  .circuit-bg {
+    background-image: linear-gradient(rgba(55, 230, 196, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(55, 230, 196, 0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
+
+::selection {
+  background: rgba(55, 230, 196, 0.35);
+  color: #06090c;
+}
+
+:focus-visible {
+  outline: 2px solid #37e6c4;
+  outline-offset: 2px;
+}

@@ -1,0 +1,404 @@
+// Advanced Electronics Repair & Reprogramming Laboratory
+// Primary data model. PostgreSQL + Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  TECHNICIAN
+  FRONT_DESK
+}
+
+enum RepairStatus {
+  NEW
+  UNDER_REVIEW
+  DIAGNOSTIC_PENDING
+  DIAGNOSING
+  QUOTE_SENT
+  APPROVED
+  IN_REPAIR
+  TESTING
+  COMPLETED
+  RETURN_SHIPPING
+  CLOSED
+  UNREPAIRABLE
+}
+
+enum ServicePreference {
+  LOCAL_DROP_OFF
+  MAIL_IN
+  SHIP_IN
+  BUSINESS_ACCOUNT
+  FLEET_SERVICE_ACCOUNT
+}
+
+enum EquipmentCategory {
+  PHONE_TABLET
+  COMPUTER_MOTHERBOARD
+  GPU
+  GAME_CONSOLE
+  AUTOMOTIVE_MODULE
+  AVIATION_ELECTRONICS
+  ASIC_MINING_HARDWARE
+  INDUSTRIAL_SPECIALTY
+  OTHER
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  APPROVED
+  DECLINED
+  EXPIRED
+}
+
+enum AttachmentKind {
+  PHOTO
+  VIDEO
+  DOCUMENT
+  DIAGNOSTIC_REPORT
+}
+
+enum MessageSender {
+  CUSTOMER
+  TECHNICIAN
+  SYSTEM
+}
+
+enum ContactSubmissionType {
+  GENERAL
+  BUSINESS_ACCOUNT
+  REPAIR_SHOP_PARTNER
+  MEDIA
+}
+
+// ---------------------------------------------------------------------------
+// Identity & accounts
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  role          UserRole  @default(TECHNICIAN)
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  technician    Technician?
+  auditLogs     AuditLog[]
+
+  @@index([email])
+}
+
+model Customer {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  phone          String?
+  company        String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  businessAccount   BusinessAccount? @relation(fields: [businessAccountId], references: [id])
+  businessAccountId String?
+
+  repairRequests Repair[]
+  messages       Message[]
+
+  @@index([email])
+  @@index([businessAccountId])
+}
+
+model BusinessAccount {
+  id                 String   @id @default(cuid())
+  shopName           String
+  contactName        String
+  email              String   @unique
+  phone              String?
+  website            String?
+  monthlyVolume      String?
+  equipmentTypes     String?
+  outsourcingNeeds   String?
+  accountType        String   @default("trade") // trade | fleet | insurance | refurbisher
+  isApproved         Boolean  @default(false)
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  customers          Customer[]
+
+  @@index([email])
+}
+
+model Technician {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  title     String?
+  bio       String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  repairs   Repair[]
+}
+
+// ---------------------------------------------------------------------------
+// Service catalog (content lives primarily in the static content layer;
+// these tables let admins override/extend catalog data and back the
+// searchable service directory + future CMS editing).
+// ---------------------------------------------------------------------------
+
+model ServiceCategory {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  services    Service[]
+}
+
+model Service {
+  id             String            @id @default(cuid())
+  slug           String            @unique
+  name           String
+  shortSummary   String
+  metaTitle      String?
+  metaDescription String?
+  isActive       Boolean           @default(true)
+  sortOrder      Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  category       ServiceCategory   @relation(fields: [categoryId], references: [id])
+  categoryId     String
+
+  @@index([categoryId])
+}
+
+model Location {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  city         String
+  state        String   @default("TX")
+  zipCodes     String[]
+  headline     String
+  summary      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Repair workflow
+// ---------------------------------------------------------------------------
+
+model Device {
+  id           String            @id @default(cuid())
+  category     EquipmentCategory
+  manufacturer String
+  model        String
+  serialNumber String?
+  partNumber   String?
+  createdAt    DateTime          @default(now())
+
+  repair       Repair?
+}
+
+model Repair {
+  id                 String            @id @default(cuid())
+  referenceCode      String            @unique
+  status             RepairStatus      @default(NEW)
+  servicePreference  ServicePreference
+
+  customer           Customer          @relation(fields: [customerId], references: [id])
+  customerId         String
+
+  device             Device            @relation(fields: [deviceId], references: [id])
+  deviceId           String            @unique
+
+  errorCode          String?
+  symptoms           String
+  problemStartedAt   String?
+  previousAttempts   String?
+  hasLiquidDamage    Boolean           @default(false)
+  hasPhysicalDamage  Boolean           @default(false)
+  hasPowerIssue      Boolean           @default(false)
+  isIntermittent     Boolean           @default(false)
+  hasNoDisplay       Boolean           @default(false)
+  hasBootFailure     Boolean           @default(false)
+
+  assignedTechnician Technician?       @relation(fields: [technicianId], references: [id])
+  technicianId       String?
+
+  internalNotes      String?
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  diagnostics        Diagnostic[]
+  quotes             Quote[]
+  attachments         Attachment[]
+  messages            Message[]
+  statusHistory       RepairStatusEvent[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([referenceCode])
+}
+
+model RepairStatusEvent {
+  id        String       @id @default(cuid())
+  repair    Repair       @relation(fields: [repairId], references: [id])
+  repairId  String
+  status    RepairStatus
+  note      String?
+  createdAt DateTime     @default(now())
+
+  @@index([repairId])
+}
+
+model Diagnostic {
+  id          String   @id @default(cuid())
+  repair      Repair   @relation(fields: [repairId], references: [id])
+  repairId    String
+  findings    String
+  rootCause   String?
+  isRepairable Boolean?
+  performedBy String?
+  createdAt   DateTime @default(now())
+
+  @@index([repairId])
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  repair      Repair      @relation(fields: [repairId], references: [id])
+  repairId    String
+  amountCents Int?
+  currency    String      @default("USD")
+  status      QuoteStatus @default(DRAFT)
+  notes       String?
+  sentAt      DateTime?
+  respondedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([repairId])
+}
+
+model Attachment {
+  id          String         @id @default(cuid())
+  repair      Repair         @relation(fields: [repairId], references: [id])
+  repairId    String
+  kind        AttachmentKind
+  storageKey  String
+  fileName    String
+  mimeType    String
+  sizeBytes   Int
+  uploadedBy  String?
+  createdAt   DateTime       @default(now())
+
+  @@index([repairId])
+}
+
+model Message {
+  id        String        @id @default(cuid())
+  repair    Repair        @relation(fields: [repairId], references: [id])
+  repairId  String
+  customer  Customer?     @relation(fields: [customerId], references: [id])
+  customerId String?
+  sender    MessageSender
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([repairId])
+}
+
+// ---------------------------------------------------------------------------
+// Content
+// ---------------------------------------------------------------------------
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String?
+  sortOrder Int      @default(0)
+  isPublished Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BlogPost {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  excerpt         String
+  body            String
+  category        String
+  authorName      String?
+  metaTitle       String?
+  metaDescription String?
+  isPublished     Boolean   @default(false)
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  authorName  String
+  authorRole  String?
+  quote       String
+  serviceSlug String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model ContactSubmission {
+  id        String                @id @default(cuid())
+  type      ContactSubmissionType @default(GENERAL)
+  name      String
+  email     String
+  phone     String?
+  message   String
+  metadata  Json?
+  createdAt DateTime              @default(now())
+
+  @@index([type])
+}
+
+// ---------------------------------------------------------------------------
+// Audit
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      User?    @relation(fields: [actorId], references: [id])
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+}
