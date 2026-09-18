@@ -25,12 +25,28 @@ const generateSchema = z.object({
   brief: z.string().min(1).max(2000),
 })
 
-export async function POST(request: Request) {
-  if (!isTrustedOrigin(request)) {
-    return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
+// Two ways in: an admin session (the /admin/marketing UI), or a shared
+// secret (a scheduled automation like n8n calling this on a cadence — see
+// /docs/MARKETING_AI_ARCHITECTURE.md). Origin checking only applies to the
+// session path; a service-to-service caller has no browser Origin to check.
+async function authorizeGenerate(request: Request) {
+  const agentSecret = request.headers.get('x-marketing-agent-secret')
+  if (agentSecret && process.env.MARKETING_AGENT_SECRET && agentSecret === process.env.MARKETING_AGENT_SECRET) {
+    return { ok: true as const }
   }
 
+  if (!isTrustedOrigin(request)) {
+    return { ok: false as const, error: 'Invalid request origin.', status: 403 as const }
+  }
   const auth = await requireRole(MARKETING_VIEW_ROLES)
+  if (!auth.ok) {
+    return { ok: false as const, error: auth.error, status: auth.status }
+  }
+  return { ok: true as const }
+}
+
+export async function POST(request: Request) {
+  const auth = await authorizeGenerate(request)
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status })
   }
