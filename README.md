@@ -1,4 +1,4 @@
-# Advanced Electronics Repair & Reprogramming Laboratory
+# TraceWorks Lab
 
 Production-grade website for a board-level and component-level electronics
 repair laboratory serving Harlingen, TX through Mission, TX and the Rio

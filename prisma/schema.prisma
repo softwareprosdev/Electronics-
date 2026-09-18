@@ -1,4 +1,4 @@
-// Advanced Electronics Repair & Reprogramming Laboratory
+// TraceWorks Lab — firmware-level electronics repair
 // Primary data model. PostgreSQL + Prisma.
 
 generator client {

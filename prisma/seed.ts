@@ -42,7 +42,7 @@ async function main() {
       slug: 'harlingen',
       city: 'Harlingen',
       zipCodes: ['78550', '78551', '78552', '78553'],
-      headline: 'Advanced Electronics Repair in Harlingen, TX',
+      headline: 'Board-Level Electronics Repair in Harlingen, TX',
       summary:
         'Our laboratory is based in the Harlingen area, serving the core of the Rio Grande Valley with board-level diagnostics and component-level repair.',
     },
@@ -66,7 +66,7 @@ async function main() {
       slug: 'mcallen',
       city: 'McAllen',
       zipCodes: ['78501', '78503', '78504'],
-      headline: 'Advanced Electronics Repair Serving McAllen',
+      headline: 'Board-Level Electronics Repair Serving McAllen',
       summary:
         'McAllen customers, repair shops, and businesses can route board-level electronics work to our laboratory for component-level evaluation.',
     },
