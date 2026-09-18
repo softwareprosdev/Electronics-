@@ -705,3 +705,20 @@ model FunnelCheck {
   @@index([status])
   @@index([checkedAt])
 }
+
+// One row per Bird mailbox conversation thread we've acknowledged. The
+// unique constraint on threadId is the loop-prevention mechanism for the
+// inbound-email auto-responder (POST /api/webhooks/bird): a thread gets at
+// most one automated acknowledgment, no matter how many follow-up messages
+// arrive on it or how many times Bird retries the webhook delivery.
+model InboundEmailAck {
+  id          String   @id @default(cuid())
+  threadId    String   @unique
+  mailboxId   String
+  messageId   String
+  fromAddress String
+  subject     String?
+  repliedAt   DateTime @default(now())
+
+  @@index([mailboxId])
+}

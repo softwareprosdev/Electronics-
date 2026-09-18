@@ -33,3 +33,35 @@ export async function composeFromMailbox(options: {
     console.error('[mailbox:bird] compose failed', error)
   }
 }
+
+// Reply within an existing conversation thread — used by the inbound-email
+// webhook handler (see /api/webhooks/bird) to send an instant acknowledgment
+// to a customer. Unlike composeFromMailbox(), this targets a specific
+// received message, so Bird derives the recipient, subject, and threading
+// headers automatically rather than starting a new conversation.
+export async function replyInThread(options: {
+  threadId: string
+  messageId: string
+  text: string
+}) {
+  const apiKey = process.env.EMAIL_API_KEY
+
+  if (!apiKey) {
+    console.warn('[mailbox:bird] EMAIL_API_KEY is not set; skipping reply.')
+    return
+  }
+
+  const bird = new BirdClient({ apiKey })
+
+  try {
+    const reply = await bird.email.threads.messages.reply(
+      options.threadId,
+      options.messageId,
+      { text: options.text },
+    )
+    console.log(`[mailbox:bird] replied in thread=${options.threadId} id=${reply.id}`)
+    return reply
+  } catch (error) {
+    console.error('[mailbox:bird] reply failed', error)
+  }
+}
