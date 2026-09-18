@@ -5,7 +5,8 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   phone: process.env.NEXT_PUBLIC_BUSINESS_PHONE || '+19563921440',
   phoneDisplay: process.env.NEXT_PUBLIC_BUSINESS_PHONE_DISPLAY || '(956) 392-1440',
-  email: process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'repairs@softwarepros.org',
+  email: process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'info@traceworkslab.com',
+  repairEmail: process.env.REPAIR_NOTIFY_EMAIL || 'repairs@traceworkslab.com',
   addressLocality: 'Harlingen',
   addressRegion: 'TX',
   serviceArea: [
