@@ -8,6 +8,7 @@ import { Analytics } from '@/components/Analytics'
 import { JsonLd } from '@/components/JsonLd'
 import { organizationJsonLd, websiteJsonLd } from '@/lib/seo'
 import { siteConfig } from '@/lib/site-config'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <MobileStickyCTA />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
