@@ -10,9 +10,9 @@ export function Header() {
           <Image
             src="/brand/traceworks-logo.png"
             alt="TraceWorks Lab"
-            width={40}
-            height={40}
-            className="h-10 w-10 flex-shrink-0"
+            width={64}
+            height={64}
+            className="h-12 w-12 flex-shrink-0 sm:h-14 sm:w-14"
             priority
           />
           <span className="hidden flex-col leading-none sm:flex">
