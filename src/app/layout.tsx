@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer'
 import { AnnouncementBar } from '@/components/AnnouncementBar'
 import { MobileStickyCTA } from '@/components/MobileStickyCTA'
 import { Analytics } from '@/components/Analytics'
+import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { JsonLd } from '@/components/JsonLd'
 import { organizationJsonLd, websiteJsonLd } from '@/lib/seo'
 import { siteConfig } from '@/lib/site-config'
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <MobileStickyCTA />
         <Analytics />
+        <VercelAnalytics />
       </body>
     </html>
   )
