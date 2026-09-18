@@ -50,6 +50,9 @@ enum AgentName {
   ORCHESTRATOR
   COST_AGENT
   PRICING_AGENT
+  MARKETING_ORCHESTRATOR
+  MARKETING_GUARDIAN
+  MARKETING_CREATIVE
 }
 
 enum RepairStatus {
@@ -136,6 +139,7 @@ model User {
   updatedPricingRules     PricingRule[]           @relation("PricingRuleUpdatedBy")
   reviewedRecommendations PricingRecommendation[] @relation("RecommendationReviewedBy")
   updatedSystemSettings   SystemSetting[]         @relation("SystemSettingUpdatedBy")
+  reviewedMarketingDrafts MarketingDraft[]        @relation("MarketingDraftReviewedBy")
 
   @@index([email])
 }
@@ -586,4 +590,118 @@ model SystemSetting {
   updatedAt   DateTime @updatedAt
   updatedBy   User?    @relation("SystemSettingUpdatedBy", fields: [updatedById], references: [id])
   updatedById String?
+}
+
+// --- Marketing AI Agent Swarm ------------------------------------------
+// See /docs/MARKETING_AI_ARCHITECTURE.md. Same design rules as the pricing
+// agent layer: agents never spend money or publish content directly — every
+// proposed action is a MarketingDraft a human must approve — and every
+// self-learning claim is stored with its evidence and a confidence label,
+// never as an unsourced assertion.
+
+enum MarketingChannel {
+  GOOGLE_SEARCH
+  GOOGLE_LSA
+  META
+  TIKTOK
+  YOUTUBE
+  EMAIL
+  ORGANIC_SITE
+}
+
+enum MarketingDraftType {
+  CAMPAIGN_LAUNCH
+  BUDGET_CHANGE
+  AD_CREATIVE
+  SOCIAL_POST
+  EMAIL_SEND
+}
+
+enum MarketingDraftStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum GuardrailAction {
+  WATCH
+  FLAG_FOR_REVIEW
+  AUTO_PAUSE
+  AUTO_REALLOCATE
+}
+
+// A proposed marketing action awaiting human approval. Nothing in this
+// codebase executes a MarketingDraft automatically — see
+// evaluateCampaignHealth()/evaluateFunnelHealth() in src/lib/marketing/
+// guardrails.ts for why "auto-pause" today means "drafted for approval",
+// not "executed", until a live ad-platform integration exists.
+model MarketingDraft {
+  id             String                @id @default(cuid())
+  type           MarketingDraftType
+  channel        MarketingChannel
+  title          String
+  payload        Json
+  rationale      String?
+  guardrailAction GuardrailAction?
+  status         MarketingDraftStatus  @default(PENDING_REVIEW)
+  createdByAgent AgentName
+  sourceAgentRunId String?
+
+  reviewedBy   User?     @relation("MarketingDraftReviewedBy", fields: [reviewedById], references: [id])
+  reviewedById String?
+  reviewedAt   DateTime?
+  reviewNote   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([channel])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// The self-learning memory: a claim about what works, always tied to the
+// evidence it came from and labeled with a confidence tier (mirrors the
+// "known_fact"/"historical_evidence"/"hypothesis"/"insufficient_data"
+// convention from pricing-agent.ts). Read by the creative agent before it
+// drafts new copy; written by the guardian/orchestrator after a cycle.
+model MarketingLesson {
+  id             String           @id @default(cuid())
+  channel        MarketingChannel
+  tag            String
+  summary        String
+  evidence       Json
+  confidence     String
+  sourceDraftId  String?
+  createdAt      DateTime         @default(now())
+
+  @@index([channel])
+  @@index([tag])
+  @@index([createdAt])
+}
+
+enum FunnelCheckStatus {
+  OK
+  DEGRADED
+  DOWN
+}
+
+// Self-healing (technical): a health-check result for a public funnel
+// (a page, an API route, the sitemap). Written by scripts/marketing-swarm/
+// funnel-health-check.mjs via POST /api/admin/funnel-checks, typically on a
+// schedule (see .github/workflows/funnel-health-check.yml).
+model FunnelCheck {
+  id          String            @id @default(cuid())
+  target      String
+  url         String
+  status      FunnelCheckStatus
+  httpStatus  Int?
+  latencyMs   Int?
+  errorDetail String?
+  checkedAt   DateTime          @default(now())
+
+  @@index([target])
+  @@index([status])
+  @@index([checkedAt])
 }
