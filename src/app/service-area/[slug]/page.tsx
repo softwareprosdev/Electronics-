@@ -60,8 +60,14 @@ export default async function LocationPage({ params }: PageProps) {
           <p className="mt-4 text-sm leading-relaxed text-lab-muted sm:text-base">
             {location.corridorNote}
           </p>
+          <p className="mt-4 rounded-sm border border-lab-accent/40 bg-lab-accent/10 p-4 text-sm font-medium text-lab-text">
+            You do not need to be near {location.city} to work with us. Our laboratory accepts
+            mail-in repairs from customers nationwide — {location.city} is one of many places we
+            serve, not the limit of where we serve.
+          </p>
           <p className="mt-6 text-xs uppercase tracking-wide text-lab-muted">
-            ZIP codes served: {location.zipCodes.join(', ')}
+            ZIP codes served locally: {location.zipCodes.join(', ')} — plus mail-in repair from
+            anywhere in the U.S.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link href="/request-repair" className="btn-primary">
