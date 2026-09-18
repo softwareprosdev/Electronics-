@@ -39,16 +39,26 @@ export async function composeFromMailbox(options: {
 // to a customer. Unlike composeFromMailbox(), this targets a specific
 // received message, so Bird derives the recipient, subject, and threading
 // headers automatically rather than starting a new conversation.
+export type ReplyResult =
+  | { ok: true }
+  // `permanent` distinguishes a failure that retrying cannot fix (a missing
+  // API scope, bad credentials, a rejected payload) from a transient one
+  // (network blip, Bird 5xx). The caller uses it to decide whether to ask
+  // the webhook sender to redeliver.
+  | { ok: false; permanent: boolean }
+
+const PERMANENT_STATUS_CODES = new Set([400, 401, 403, 404, 422])
+
 export async function replyInThread(options: {
   threadId: string
   messageId: string
   text: string
-}) {
+}): Promise<ReplyResult> {
   const apiKey = process.env.EMAIL_API_KEY
 
   if (!apiKey) {
     console.warn('[mailbox:bird] EMAIL_API_KEY is not set; skipping reply.')
-    return
+    return { ok: false, permanent: true }
   }
 
   const bird = new BirdClient({ apiKey })
@@ -60,8 +70,11 @@ export async function replyInThread(options: {
       { text: options.text },
     )
     console.log(`[mailbox:bird] replied in thread=${options.threadId} id=${reply.id}`)
-    return reply
+    return { ok: true }
   } catch (error) {
-    console.error('[mailbox:bird] reply failed', error)
+    const statusCode = (error as { statusCode?: number })?.statusCode
+    const permanent = statusCode !== undefined && PERMANENT_STATUS_CODES.has(statusCode)
+    console.error(`[mailbox:bird] reply failed (permanent=${permanent})`, error)
+    return { ok: false, permanent }
   }
 }

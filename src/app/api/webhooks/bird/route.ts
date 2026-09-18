@@ -66,7 +66,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true })
   }
 
-  const { message_id, thread_id, mailbox_id, from, subject } = event.data
+  // Bird's "Send test event" button delivers a synthetic event with no data
+  // payload, so this cannot assume the fields are present.
+  const data = event.data as
+    | {
+        message_id?: string
+        thread_id?: string
+        mailbox_id?: string
+        from?: string
+        subject?: string | null
+      }
+    | undefined
+
+  if (!data?.message_id || !data.thread_id || !data.mailbox_id || !data.from) {
+    console.log('[bird-webhook] event has no usable message data (synthetic test event?); ignoring.')
+    return NextResponse.json({ received: true, skipped: 'no-message-data' })
+  }
+
+  const { message_id, thread_id, mailbox_id, from, subject } = data
 
   if (subject && SKIP_SUBJECT_PATTERNS.some((pattern) => pattern.test(subject))) {
     console.log(`[bird-webhook] skipping likely automated mail: "${subject}"`)
@@ -130,13 +147,23 @@ export async function POST(request: Request) {
     text: ACK_TEXT,
   })
 
-  if (!reply) {
+  if (!reply.ok) {
     // The row above doubles as a lock against duplicate deliveries, so it has
     // to come out again when the send fails — otherwise the thread stays
-    // marked acknowledged forever and the customer never gets a reply. The
-    // 500 tells Bird to retry, which covers transient failures.
+    // marked acknowledged forever and the customer never gets a reply.
     await prisma.inboundEmailAck.delete({ where: { threadId: thread_id } }).catch(() => {})
-    console.error(`[bird-webhook] reply failed for thread=${thread_id}; ack row rolled back.`)
+
+    if (reply.permanent) {
+      // Retrying a missing scope or bad credential just fails again on every
+      // attempt and gets the endpoint marked degraded, so acknowledge the
+      // delivery and rely on the logged error instead.
+      console.error(
+        `[bird-webhook] reply permanently failed for thread=${thread_id}; not requesting retry. Check the Bird API key's scopes.`,
+      )
+      return NextResponse.json({ received: true, skipped: 'reply-failed-permanent' })
+    }
+
+    console.error(`[bird-webhook] reply failed for thread=${thread_id}; requesting retry.`)
     return NextResponse.json({ error: 'Reply failed' }, { status: 500 })
   }
 
