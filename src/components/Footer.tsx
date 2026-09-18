@@ -12,9 +12,9 @@ export function Footer() {
               <Image
                 src="/brand/traceworks-logo.png"
                 alt="TraceWorks Lab"
-                width={48}
-                height={48}
-                className="h-10 w-10 sm:h-12 sm:w-12"
+                width={80}
+                height={80}
+                className="h-14 w-14 sm:h-16 sm:w-16"
               />
               <p className="font-mono text-sm font-semibold tracking-[0.08em] text-lab-text">
                 TRACE<span className="text-lab-accent">WORKS</span> LAB
