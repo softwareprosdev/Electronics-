@@ -162,6 +162,181 @@ export const locations: LocationContent[] = [
       'Fast diagnostic turnaround so devices are not out of use longer than necessary',
     ],
   },
+  {
+    slug: 'san-benito',
+    city: 'San Benito',
+    zipCodes: ['78586'],
+    headline: 'Board-Level Electronics Repair Serving San Benito, TX',
+    summary:
+      'San Benito customers are just minutes from our Harlingen laboratory, giving quick access to board-level diagnostics and component-level repair for devices, boards, and modules other shops were unable to resolve.',
+    areaContext:
+      'San Benito is a close-knit Rio Grande Valley community best known as the birthplace of Tejano music icon Freddy Fender, with a mix of longtime residential neighborhoods and small local businesses. Its proximity to Harlingen makes it one of the most convenient drop-off options in our entire service area.',
+    nearby: ['Harlingen', 'Los Fresnos', 'Rio Hondo'],
+    corridorNote:
+      'San Benito sits just southeast of Harlingen, typically a 10-to-15-minute drive from our laboratory.',
+    localPoints: [
+      'One of the closest communities to our Harlingen laboratory',
+      'Serves consumer, gaming, and small-business electronics customers',
+      'Component-level repair for boards other San Benito-area shops could not resolve',
+      'Convenient for same-day drop-off given the short distance',
+    ],
+    serviceOptions: [
+      'In-person drop-off is practical given the short distance to Harlingen',
+      'Mail-in repair available for customers who prefer not to travel at all',
+      'Diagnostic-first pricing so costs are clear before repair begins',
+      'Business accounts available for local shops and retailers',
+    ],
+  },
+  {
+    slug: 'la-feria',
+    city: 'La Feria',
+    zipCodes: ['78559'],
+    headline: 'Electronics Repair Laboratory Serving La Feria, TX',
+    summary:
+      'La Feria customers have straightforward access to our Harlingen laboratory for board-level and component-level electronics repair, with both drop-off and mail-in options available.',
+    areaContext:
+      'La Feria is a small agricultural and residential community along US-83, roughly midway between Harlingen and the Mid-Valley cities. Its size means residents often have to travel for specialized repair work, which is where our board-level diagnostic capability fills a real gap.',
+    nearby: ['Santa Rosa', 'Mercedes', 'Harlingen'],
+    corridorNote:
+      'La Feria sits along US-83 a short drive west of Harlingen, well within easy reach of our laboratory.',
+    localPoints: [
+      'Serves consumer and small-business electronics customers',
+      'Component-level repair for phones, computers, and gaming hardware',
+      'Convenient stop along the US-83 corridor from Harlingen',
+      'Mail-in service available for customers who prefer not to travel',
+    ],
+    serviceOptions: [
+      'Short drive to our Harlingen laboratory for in-person drop-off',
+      'Mail-in repair for customers who prefer to ship rather than travel',
+      'Diagnostic findings communicated clearly before any repair is approved',
+      'Business accounts available for La Feria-area shops and retailers',
+    ],
+  },
+  {
+    slug: 'mercedes',
+    city: 'Mercedes',
+    zipCodes: ['78570'],
+    headline: 'Board-Level Electronics Repair Serving Mercedes, TX',
+    summary:
+      'Mercedes customers can route board-level and component-level electronics work to our Harlingen laboratory through mail-in service or coordinated drop-off.',
+    areaContext:
+      'Mercedes is home to the Rio Grande Valley\'s main outlet shopping center, drawing significant retail traffic from across the region, alongside its established agricultural and residential base. That retail presence means we regularly see point-of-sale and small-business electronics from Mercedes-area merchants in addition to consumer devices.',
+    nearby: ['Weslaco', 'La Feria', 'Donna'],
+    corridorNote:
+      'Mercedes sits along the Harlingen-to-Mission corridor, close to Weslaco and within convenient reach of our laboratory.',
+    localPoints: [
+      'Serves consumer, retail, and small-business electronics customers',
+      'Component-level repair for point-of-sale and business equipment',
+      'Convenient position along the Harlingen-to-Mission corridor',
+      'Mail-in and drop-off options both available',
+    ],
+    serviceOptions: [
+      'Mail-in repair for Mercedes-area customers who prefer not to travel',
+      'Coordinated drop-off for customers traveling the US-83 corridor',
+      'Business accounts for retailers and shops near the outlet center',
+      'Transparent diagnostic pricing before any repair is approved',
+    ],
+  },
+  {
+    slug: 'donna',
+    city: 'Donna',
+    zipCodes: ['78537'],
+    headline: 'Electronics Repair Laboratory Serving Donna, TX',
+    summary:
+      'Donna customers have access to the same board-level diagnostic and component-level repair capability used throughout the Rio Grande Valley, with mail-in service recommended given the distance from our laboratory.',
+    areaContext:
+      'Donna is an agricultural and residential community along US-83 in the Mid-Valley area, with a growing base of small businesses and consumer electronics needs. Many Donna-area customers already travel toward Weslaco or McAllen for specialized services, making mail-in repair a practical alternative to an extra trip.',
+    nearby: ['Weslaco', 'Alamo', 'Mercedes'],
+    corridorNote:
+      'Donna sits along the Harlingen-to-Mission corridor in the Mid-Valley area, roughly 30 to 35 minutes from our Harlingen laboratory.',
+    localPoints: [
+      'Serves consumer, gaming, and small-business electronics customers',
+      'Component-level repair for boards other Donna-area shops could not resolve',
+      'Mail-in service is often the most practical option given the distance',
+      'Reachable via the Harlingen-to-Mission service corridor',
+    ],
+    serviceOptions: [
+      'Mail-in repair recommended given the distance from Harlingen',
+      'Coordinated drop-off available for customers who prefer to travel',
+      'Diagnostic-first process so costs are clear before repair begins',
+      'Business accounts available for Donna-area shops and retailers',
+    ],
+  },
+  {
+    slug: 'alamo',
+    city: 'Alamo',
+    zipCodes: ['78516'],
+    headline: 'Board-Level Electronics Repair Serving Alamo, TX',
+    summary:
+      'Alamo customers can access board-level and component-level electronics repair through our laboratory, with mail-in service recommended for the distance involved.',
+    areaContext:
+      'Alamo is a Mid-Valley community known locally for the World Birding Center location within the city, alongside a steady residential and small-business base. As with much of the western Rio Grande Valley, most Alamo-area customers find mail-in repair more practical than a same-day trip to Harlingen.',
+    nearby: ['Donna', 'San Juan', 'Mission'],
+    corridorNote:
+      'Alamo sits toward the western end of our service corridor, roughly 40 minutes from our Harlingen-based laboratory.',
+    localPoints: [
+      'Serves consumer, automotive, and small-business electronics customers',
+      'Component-level repair for boards and devices other shops could not resolve',
+      'Mail-in service recommended given the distance from Harlingen',
+      'Reachable via the full length of our Harlingen-to-Mission service corridor',
+    ],
+    serviceOptions: [
+      'Mail-in repair recommended given the roughly 40-minute distance from Harlingen',
+      'Coordinated drop-off available for customers who prefer to travel',
+      'Automotive module evaluation for Alamo-area vehicle owners and shops',
+      'Transparent diagnostic findings before any repair cost is approved',
+    ],
+  },
+  {
+    slug: 'pharr',
+    city: 'Pharr',
+    zipCodes: ['78577'],
+    headline: 'Board-Level Electronics Repair Serving Pharr, TX',
+    summary:
+      'Pharr customers, including businesses connected to the Pharr International Bridge trade corridor, can route board-level electronics work to our laboratory through mail-in service or coordinated drop-off.',
+    areaContext:
+      'Pharr is home to one of the busiest commercial trade bridges on the US-Mexico border, giving the city a significant logistics, warehousing, and trade-business presence alongside its residential base. That mix drives demand for both business electronics repair and everyday consumer device service from the Pharr area.',
+    nearby: ['San Juan', 'Alamo', 'McAllen'],
+    corridorNote:
+      'Pharr sits in the McAllen metro area toward the western end of our service corridor, roughly 40 to 45 minutes from Harlingen.',
+    localPoints: [
+      'Serves logistics, trade, and business customers near the international bridge',
+      'Component-level repair for consumer electronics, computers, and gaming hardware',
+      'Business and trade accounts available for Pharr-area companies',
+      'Mail-in service practical given the distance from Harlingen',
+    ],
+    serviceOptions: [
+      'Mail-in repair recommended given the distance from Harlingen',
+      'Business and trade accounts for companies near the international bridge',
+      'Coordinated drop-off available for customers who prefer to travel',
+      'Diagnostic-first pricing so costs are clear before repair begins',
+    ],
+  },
+  {
+    slug: 'san-juan',
+    city: 'San Juan',
+    zipCodes: ['78589'],
+    headline: 'Electronics Repair Laboratory Serving San Juan, TX',
+    summary:
+      'San Juan customers can access the same board-level diagnostic and component-level repair capability used throughout the Rio Grande Valley, with mail-in service recommended given the distance involved.',
+    areaContext:
+      'San Juan is known throughout South Texas as home to the Basilica of Our Lady of San Juan del Valle, a major pilgrimage destination, alongside a steady residential and small-business community. The city sits directly between Pharr and Alamo in the heart of the McAllen metro area.',
+    nearby: ['Pharr', 'Alamo', 'McAllen'],
+    corridorNote:
+      'San Juan sits in the McAllen metro area toward the western end of our service corridor, roughly 40 to 45 minutes from Harlingen.',
+    localPoints: [
+      'Serves consumer, small-business, and visitor-related electronics needs',
+      'Component-level repair for phones, computers, and gaming hardware',
+      'Mail-in service practical given the distance from Harlingen',
+      'Part of the broader McAllen-metro business and trade account base',
+    ],
+    serviceOptions: [
+      'Mail-in repair recommended given the distance from Harlingen',
+      'Coordinated drop-off available for customers who prefer to travel',
+      'Business accounts available for San Juan-area shops and retailers',
+      'Transparent diagnostic pricing before any repair is approved',
+    ],
+  },
 ]
 
 export function getLocationBySlug(slug: string): LocationContent | undefined {

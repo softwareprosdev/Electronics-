@@ -167,6 +167,186 @@ export const faqs: FaqItem[] = [
     answer:
       'No. We do not perform activation-lock bypasses, stolen-device unlocking, fraudulent carrier unlocking, or identifier alteration intended to conceal a device’s identity.',
   },
+  {
+    category: 'Board-Level Repair',
+    question: 'How long do board-level repairs typically take once accepted?',
+    answer:
+      'Timelines vary by device category, the complexity of the fault, and current volume. A technician will provide an estimated timeline once diagnostics are complete and a repair path has been identified.',
+  },
+  {
+    category: 'Board-Level Repair',
+    question: 'Will a board-level repair affect my manufacturer warranty?',
+    answer:
+      'For most consumer devices, opening the enclosure for third-party repair can affect an existing manufacturer warranty. If your device is still under warranty, that is worth weighing before submitting it for evaluation, and we are happy to discuss it during intake.',
+  },
+  {
+    category: 'Apple Devices',
+    question: 'Do you repair Android phones and tablets?',
+    answer:
+      'Our published service pages focus on iPhone and iPad board-level repair, but we evaluate a range of Android phones and tablets as well. Submit a repair request describing the device and symptoms and a technician will confirm whether it falls within our current capability.',
+  },
+  {
+    category: 'Apple Devices',
+    question: 'What if my iPhone or iPad has severe corrosion from water damage?',
+    answer:
+      'Severe corrosion is evaluated the same way any liquid-damage case is: under magnification, checking for shorted rails and compromised components before any repair estimate is given. Some corrosion damage is repairable; some has progressed too far. We will tell you which applies after inspection.',
+  },
+  {
+    category: 'Gaming',
+    question: 'Do you repair older PS4 or Xbox One consoles?',
+    answer:
+      'Yes. While our newest-generation console pages focus on PS5, Xbox Series X/S, and Switch, the same board-level diagnostic process applies to PS4 and Xbox One hardware. Submit a repair request with the console model and symptoms.',
+  },
+  {
+    category: 'Gaming',
+    question: 'Can a console with a broken disc drive still be repaired?',
+    answer:
+      'A failed disc drive is typically a separate issue from a board-level electrical fault, and the two are diagnosed independently. If the drive itself is mechanically damaged, we will let you know whether that is something we can address or whether it falls outside board-level repair.',
+  },
+  {
+    category: 'Computers & GPUs',
+    question: 'Do you repair laptop motherboards specifically?',
+    answer:
+      'Yes. Laptop motherboards are evaluated using the same board-level and component-level process as desktop boards, accounting for the tighter component spacing and connector layouts typical of laptop designs.',
+  },
+  {
+    category: 'Computers & GPUs',
+    question: 'Can you repair a GPU that was worn out from mining or heavy rendering use?',
+    answer:
+      'Extended heavy-load use is a common cause of VRM and power-circuitry wear on graphics cards. These are evaluated the same way as any other GPU fault: board-level diagnostics first, followed by findings and options before any repair is approved.',
+  },
+  {
+    category: 'Computers & GPUs',
+    question: 'Do you repair desktop power supplies?',
+    answer:
+      'Power supply units are evaluated on a case-by-case basis. Submit a repair request describing the symptoms and a technician will confirm whether the unit falls within our current diagnostic capability.',
+  },
+  {
+    category: 'Mining Hardware',
+    question: 'Do you repair power supply units for mining rigs?',
+    answer:
+      'Yes. Mining rig power supplies are evaluated as part of our broader ASIC and mining hardware diagnostics, since power circuitry faults are one of the most common failure points in continuous-duty mining operations.',
+  },
+  {
+    category: 'Mining Hardware',
+    question: 'Can you evaluate multiple units from the same mining operation at once?',
+    answer:
+      'Yes. We work with both individual hobbyist miners and larger operations submitting several units at a time. Contact us or submit a business account request to discuss volume intake.',
+  },
+  {
+    category: 'Automotive',
+    question: 'Do you repair TCM (Transmission Control Module) units?',
+    answer:
+      'Yes. TCM boards are evaluated using the same component-level diagnostic approach used for ECU, ECM, and BCM modules, covering power, communication, and corrosion-related faults.',
+  },
+  {
+    category: 'Automotive',
+    question: 'Can a module with corrosion damage still be repaired?',
+    answer:
+      'It depends on the extent of the corrosion and which circuits it has affected. Evaluation under magnification determines whether the module is a viable repair candidate or whether the damage has progressed too far.',
+  },
+  {
+    category: 'Aviation',
+    question: 'What documentation will I receive after an aviation electronics evaluation?',
+    answer:
+      'You receive written findings describing the condition of the board or assembly and the work performed. Any return-to-service documentation, certification, or regulatory sign-off remains your responsibility or that of a qualified facility, as applicable to your equipment.',
+  },
+  {
+    category: 'Aviation',
+    question: 'Do you work on general aviation electronics as well as larger aircraft systems?',
+    answer:
+      'We accept aviation electronics for technical evaluation on a case-by-case basis, general aviation included, when the work falls within our documented capability and applicable authorization requirements. Contact us with details about the specific board or assembly.',
+  },
+  {
+    category: 'Service Options',
+    question: "What's the difference between mail-in repair and local drop-off?",
+    answer:
+      'Local drop-off means bringing the device, board, or module directly to our Harlingen laboratory. Mail-in repair follows the same diagnostic and repair process, but the item is shipped to us instead — useful for customers outside easy driving distance.',
+  },
+  {
+    category: 'Service Options',
+    question: 'Do you offer expedited or priority service?',
+    answer:
+      'Priority service options are available for business and trade account customers with recurring repair needs. Contact us to discuss availability for a specific job.',
+  },
+  {
+    category: 'Service Options',
+    question: 'Can I check the status of my repair?',
+    answer:
+      'A technician will keep you updated at key points in the process — after diagnostics, before repair begins, and when the item is ready. A self-service customer portal for real-time status tracking is planned as a future feature.',
+  },
+  {
+    category: 'Pricing',
+    question: 'Is the diagnostic fee separate from the repair cost?',
+    answer:
+      'Diagnostics and repair are typically quoted as separate line items, since a diagnostic can determine that a board is not economically repairable. Contact us for current diagnostic rates, or submit a repair request and a technician will explain the pricing structure for your specific case.',
+  },
+  {
+    category: 'Pricing',
+    question: 'Do you offer a warranty on completed repairs?',
+    answer:
+      'Warranty terms depend on the specific repair performed and the device category. A technician will confirm what applies to your repair before work begins.',
+  },
+  {
+    category: 'Intake',
+    question: 'What information should I include with my repair request?',
+    answer:
+      'A clear description of the symptoms, when they started, and any relevant history (drops, liquid exposure, prior repairs) helps our technicians prepare for diagnostics. Photos, videos, and error screenshots uploaded through the repair request form are also useful.',
+  },
+  {
+    category: 'Intake',
+    question: 'Do I need an appointment to drop off a device?',
+    answer:
+      'Submitting a repair request ahead of time helps our technicians prepare and gives you an idea of next steps, but it is not a strict requirement for local drop-off. Mail-in customers should always wait for intake instructions before shipping anything.',
+  },
+  {
+    category: 'Business Services',
+    question: 'Is there a minimum volume required for a trade account?',
+    answer:
+      'No strict minimum is required to open a trade account. Volume pricing and priority options scale with your repair volume as it grows. Contact us to discuss what makes sense for your business.',
+  },
+  {
+    category: 'Business Services',
+    question: "Can you provide white-label diagnostic reports for my shop's customers?",
+    answer:
+      'White-label reporting is available in appropriate cases for trade account customers, such as repair shops that want to present findings under their own name to their end customer. Discuss this option when setting up your trade account.',
+  },
+  {
+    category: 'Process',
+    question: 'Who determines whether a repair is worth pursuing?',
+    answer:
+      'After diagnostics, we communicate our findings and the available options, including cost, so you can decide whether the repair makes sense given the device’s value and your needs. We do not proceed with repair work without that authorization.',
+  },
+  {
+    category: 'Process',
+    question: 'Will I be contacted before any repair work begins?',
+    answer:
+      'Yes. Diagnostics are completed first, findings are communicated, and repair work only proceeds once you approve the recommended path and cost.',
+  },
+  {
+    category: 'Data',
+    question: 'Should I back up my device before sending it in?',
+    answer:
+      'Where possible, yes. While data preservation is a consideration during board-level repair whenever technically feasible, it is not guaranteed, and customers are responsible for maintaining their own backups unless a specific data-recovery agreement is in place.',
+  },
+  {
+    category: 'Shipping & Packaging',
+    question: 'How should I package a device for mail-in repair?',
+    answer:
+      'Specific packaging guidance is provided as part of your intake instructions once a repair request is submitted, tailored to the device or board being shipped. In general, secure padding around the item and a rigid outer box are recommended to prevent movement in transit.',
+  },
+  {
+    category: 'Shipping & Packaging',
+    question: 'Am I responsible for return shipping costs?',
+    answer:
+      'Shipping arrangements, including return shipping, are confirmed during intake and may vary by repair type and business or trade account status. A technician will explain the specifics for your repair before you ship anything.',
+  },
+  {
+    category: 'Shipping & Packaging',
+    question: 'Is my package insured during transit?',
+    answer:
+      'Insurance and shipping-carrier options are discussed as part of your intake instructions. We recommend choosing a shipping method with tracking and, for higher-value items, declared-value insurance coverage.',
+  },
 ]
 
 export const faqCategories = Array.from(new Set(faqs.map((faq) => faq.category)))
