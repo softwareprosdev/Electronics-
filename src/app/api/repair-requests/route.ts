@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     }
 
     await sendEmail({
-      to: siteConfig.email,
+      to: siteConfig.repairEmail,
       subject: `New repair request ${referenceCode}`,
       body: `New repair request from ${data.name} (${data.email}). Category: ${data.category}. Symptoms: ${data.symptoms}`,
     })
