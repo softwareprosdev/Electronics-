@@ -55,6 +55,9 @@ export default async function LocationPage({ params }: PageProps) {
             {location.summary}
           </p>
           <p className="mt-4 text-sm leading-relaxed text-lab-muted sm:text-base">
+            {location.areaContext}
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-lab-muted sm:text-base">
             {location.corridorNote}
           </p>
           <p className="mt-6 text-xs uppercase tracking-wide text-lab-muted">
@@ -93,6 +96,24 @@ export default async function LocationPage({ params }: PageProps) {
               ))}
             </ul>
           </div>
+        </div>
+      </section>
+
+      <section className="border-t border-lab-line bg-lab-panel2">
+        <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+          <h2 className="text-xl font-bold text-lab-text">
+            How Service Works for {location.city} Customers
+          </h2>
+          <ul className="mt-6 space-y-3">
+            {location.serviceOptions.map((option) => (
+              <li key={option} className="flex gap-2 text-sm leading-relaxed text-lab-muted">
+                <span aria-hidden="true" className="text-lab-accent">
+                  &bull;
+                </span>
+                {option}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
