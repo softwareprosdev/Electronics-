@@ -11,6 +11,21 @@ export const metadata: Metadata = buildMetadata({
   path: '/mail-in-repair',
 })
 
+const packagingTips = [
+  'Remove or secure any loose components (batteries, cables, cards) that could shift during transit',
+  'Wrap boards and devices in anti-static packaging where available',
+  'Use padding on all sides so the item cannot move or impact the box walls',
+  'Choose a rigid outer box sized appropriately for the item, not an oversized box with excess empty space',
+  'Label fragile or sensitive items clearly on the outside of the package',
+]
+
+const whatToInclude = [
+  'A brief written description of the symptoms, even if you already described them in your repair request',
+  'Any relevant accessories needed to test the device (chargers, cables, etc.) if requested during intake',
+  'Your reference or intake number if one was provided',
+  'Do not include unrelated personal items in the package',
+]
+
 const steps = [
   { title: 'Submit Repair Request', description: 'Tell us about the device, board, or module and the symptoms you’re seeing.' },
   { title: 'Receive Intake Instructions', description: 'A technician reviews the request and sends packaging and shipping instructions.' },
@@ -38,6 +53,11 @@ export default function MailInRepairPage() {
             Customers outside the Harlingen-to-Mission service corridor can access the same
             board-level diagnostics and component-level repair used on local intake through
             mail-in service.
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-lab-muted sm:text-base">
+            Mail-in customers go through the same diagnostic-first process as local drop-off:
+            nothing is repaired, and no cost is committed, until you have received our findings
+            and approved a repair path. The only difference is how the item reaches our lab.
           </p>
           <p className="mt-4 rounded-sm border border-lab-warn/40 bg-lab-warn/10 p-4 text-sm font-medium text-lab-warn">
             Do not ship equipment before receiving shipping instructions unless otherwise
@@ -67,7 +87,44 @@ export default function MailInRepairPage() {
       </section>
 
       <section className="border-t border-lab-line bg-lab-panel2">
-        <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="grid gap-8 sm:grid-cols-2">
+            <div className="panel p-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">
+                Packaging Tips
+              </h2>
+              <ul className="mt-4 space-y-2 text-sm leading-relaxed text-lab-muted">
+                {packagingTips.map((tip) => (
+                  <li key={tip} className="flex gap-2">
+                    <span aria-hidden="true" className="text-lab-accent">
+                      &bull;
+                    </span>
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="panel p-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">
+                What to Include
+              </h2>
+              <ul className="mt-4 space-y-2 text-sm leading-relaxed text-lab-muted">
+                {whatToInclude.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span aria-hidden="true" className="text-lab-accent">
+                      &bull;
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+        <div>
           <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-muted">
             Customer Tracking
           </h2>
