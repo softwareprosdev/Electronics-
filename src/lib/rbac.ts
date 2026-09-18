@@ -7,6 +7,9 @@ import { getAdminSession, type AdminSessionPayload } from './auth'
 export const PRICING_VIEW_ROLES = ['SUPER_ADMIN', 'ADMIN', 'OWNER', 'MANAGER'] as const
 export const PRICING_RULE_EDIT_ROLES = ['SUPER_ADMIN', 'ADMIN', 'OWNER'] as const
 
+export const MARKETING_VIEW_ROLES = ['SUPER_ADMIN', 'ADMIN', 'OWNER', 'MANAGER'] as const
+export const MARKETING_APPROVE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'OWNER'] as const
+
 export type RoleCheckResult =
   | { ok: true; session: AdminSessionPayload }
   | { ok: false; error: string; status: 401 | 403 }

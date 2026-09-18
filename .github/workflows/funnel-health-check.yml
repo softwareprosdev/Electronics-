@@ -1,0 +1,24 @@
+name: Funnel health check
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/marketing-swarm
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run funnel health check
+        env:
+          SITE_URL: https://www.traceworkslab.com
+          FUNNEL_CHECK_SECRET: ${{ secrets.FUNNEL_CHECK_SECRET }}
+        run: node scripts/marketing-swarm/funnel-health-check.mjs
