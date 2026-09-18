@@ -34,7 +34,7 @@ export default function HomePage() {
           <div className="max-w-3xl">
             <p className="eyebrow">Board-Level Diagnostics &bull; Component-Level Repair</p>
             <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight text-lab-text sm:text-5xl lg:text-6xl">
-              Advanced Electronics Repair.
+              Firmware-Level Electronics Repair.
               <br />
               Down to the Board.
             </h1>
@@ -303,7 +303,7 @@ export default function HomePage() {
         <div className="max-w-2xl">
           <p className="eyebrow">Local Service Area</p>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-lab-text sm:text-3xl">
-            Advanced Electronics Repair Serving Harlingen to Mission and the Rio Grande Valley
+            Board-Level Electronics Repair Serving Harlingen to Mission and the Rio Grande Valley
           </h2>
         </div>
         <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">

@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { primaryNav, siteConfig } from '@/lib/site-config'
 
@@ -5,21 +6,21 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-lab-line bg-lab-bg/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-sm border border-lab-accent/40 bg-lab-panel text-lab-accent">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5}>
-              <rect x="4" y="4" width="16" height="16" rx="1" />
-              <path d="M8 4v3M16 4v3M8 17v3M16 17v3M4 8h3M4 16h3M17 8h3M17 16h3" />
-              <circle cx="9" cy="9" r="1" />
-              <circle cx="15" cy="15" r="1" />
-            </svg>
-          </span>
+        <Link href="/" className="flex items-center gap-2.5">
+          <Image
+            src="/brand/traceworks-logo.png"
+            alt="TraceWorks Lab"
+            width={40}
+            height={40}
+            className="h-10 w-10 flex-shrink-0"
+            priority
+          />
           <span className="hidden flex-col leading-none sm:flex">
-            <span className="font-mono text-sm font-semibold tracking-wide text-lab-text">
-              ADVANCED ELECTRONICS
+            <span className="font-mono text-sm font-semibold tracking-[0.08em] text-lab-text">
+              TRACE<span className="text-lab-accent">WORKS</span> LAB
             </span>
             <span className="text-[10px] uppercase tracking-[0.2em] text-lab-muted">
-              Repair &amp; Reprogramming Lab
+              Firmware-Level Electronics Repairs
             </span>
           </span>
         </Link>

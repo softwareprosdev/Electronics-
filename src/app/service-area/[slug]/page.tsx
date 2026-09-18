@@ -97,7 +97,7 @@ export default async function LocationPage({ params }: PageProps) {
       </section>
 
       <CtaSection
-        eyebrow={`Advanced Electronics Repair — ${location.city}, TX`}
+        eyebrow={`TraceWorks Lab — ${location.city}, TX`}
         headline="Have a device, board, or module another shop couldn't fix?"
       />
 

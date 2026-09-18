@@ -14,7 +14,7 @@ export const locations: LocationContent[] = [
     slug: 'harlingen',
     city: 'Harlingen',
     zipCodes: ['78550', '78551', '78552', '78553'],
-    headline: 'Advanced Electronics Repair in Harlingen, TX',
+    headline: 'Board-Level Electronics Repair in Harlingen, TX',
     summary:
       'Harlingen is the center of our service area. Customers throughout ZIP codes 78550, 78551, 78552, and 78553 can reach our laboratory for board-level diagnostics, component-level repair, and mail-in service for devices, boards, and modules other shops were unable to resolve.',
     nearby: ['San Benito', 'La Feria', 'Combes', 'Los Fresnos'],
@@ -62,7 +62,7 @@ export const locations: LocationContent[] = [
     slug: 'mcallen',
     city: 'McAllen',
     zipCodes: ['78501', '78503', '78504'],
-    headline: 'Advanced Electronics Repair Serving McAllen, TX',
+    headline: 'Board-Level Electronics Repair Serving McAllen, TX',
     summary:
       'McAllen customers, repair shops, and businesses can route board-level electronics work to our laboratory for component-level evaluation, including devices and modules that local McAllen-area shops were unable to repair.',
     nearby: ['Edinburg', 'Pharr', 'Mission', 'San Juan'],

@@ -1,6 +1,7 @@
 export const siteConfig = {
-  name: 'Advanced Electronics Repair & Reprogramming Laboratory',
-  shortName: 'Advanced Electronics Repair Lab',
+  name: 'TraceWorks Lab',
+  shortName: 'TraceWorks Lab',
+  legalName: 'TraceWorks Lab — Firmware-Level Electronics Repairs',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   phone: process.env.NEXT_PUBLIC_BUSINESS_PHONE || '+19563921440',
   phoneDisplay: process.env.NEXT_PUBLIC_BUSINESS_PHONE_DISPLAY || '(956) 392-1440',
@@ -33,10 +34,10 @@ export const siteConfig = {
     '78574',
     '78577',
   ],
-  tagline: 'Advanced Electronics Repair. Down to the Board.',
+  tagline: 'Firmware-Level Electronics Repairs.',
   positioningLine:
-    'Board-Level Diagnostics • Component-Level Repair • Embedded Systems • NAND/Memory • Motherboards • Automotive Modules • Aviation Electronics • GPUs • ASICs • Game Consoles',
-  coreMessage: 'When standard repair shops say "it’s not repairable," we diagnose the board.',
+    'Diagnose • Repair • Restore — Board-Level Diagnostics • Component-Level Repair • Embedded Systems • NAND/Memory • Motherboards • Automotive Modules • Aviation Electronics • GPUs • ASICs • Game Consoles',
+  coreMessage: 'When standard repair shops say "it’s not repairable," we trace the fault.',
 }
 
 export const primaryNav = [
