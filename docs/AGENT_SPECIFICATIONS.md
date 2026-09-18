@@ -38,6 +38,16 @@ against a Zod schema before use; on any validation failure or provider
 error, the agent silently falls back to the deterministic reasoning text
 (never throws, never blocks a pricing decision on an AI outage).
 
+### Marketing Guardian & Creative Agents (`src/lib/agents/marketing/`)
+A separate swarm, fully detailed in `/docs/MARKETING_AI_ARCHITECTURE.md`.
+Guardian: detects and immediately alerts on broken public funnels (real,
+autonomous, informational-only), and evaluates campaign spend/lead signals
+against guardrails to draft (never execute) a pause/reallocation
+recommendation. Creative: drafts ad copy informed by past
+`MarketingLesson` history via the same AI-provider abstraction Agent 4
+uses, falling back to the brief verbatim on any provider error. Every
+output is a `MarketingDraft` awaiting human approval at `/admin/marketing`.
+
 ## Planned (designed, not yet implemented)
 
 Each entry below states what real data source it needs before it could
@@ -51,7 +61,7 @@ yet.
 | 6 | Repair Intelligence | A body of completed repairs with structured diagnostic data. The `Repair`/`Diagnostic` tables exist; this agent is a read/summarize layer over them once volume exists. |
 | 7 | Technician Copilot | Same repair history dependency as #6, plus a RAG index (embeddings + vector search) which is infrastructure, not business data — feasible to build next, sequenced in IMPLEMENTATION_PLAN.md Phase 4. |
 | 8 | Profit Strategist | Enough completed, priced repairs across categories to rank them meaningfully. Mechanically this is a SQL aggregation + AI summarization agent once `PricingRecommendation` volume exists. |
-| 9 | Marketing ROI | Marketing spend/attribution data — no marketing platform is connected in this environment. |
+| 9 | Marketing ROI | Marketing spend/attribution data — no marketing platform is connected in this environment. The guardrail logic this agent would use once that data exists is already built and unit-tested (`evaluateCampaignHealth()` in `/docs/MARKETING_AI_ARCHITECTURE.md`); only the live data feed is missing. |
 | 10 | B2B Prospecting | The spec explicitly forbids fabricating company/contact information; this agent needs a legitimate B2B data provider before it can output anything. |
 | 11 | Quote Agent | Builds on the existing `Quote` model + the (implemented) pricing engine; mechanical to add once quote-sending (email) is wired to a real provider (currently `EMAIL_PROVIDER=console`). |
 | 12 | Capacity Agent | Needs `TechnicianTimeEntry`-level data (actual hours logged per ticket) which isn't collected yet — the schema note for it is in DATABASE_ARCHITECTURE.md. The *pricing engine* already accepts a manually supplied `technicianCapacityPercent` so capacity-aware pricing works today; the agent that computes that percentage automatically from time entries is future work. |
