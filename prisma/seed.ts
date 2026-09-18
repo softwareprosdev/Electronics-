@@ -96,6 +96,113 @@ async function main() {
     })
   }
 
+  await prisma.pricingRule.upsert({
+    where: { key: 'global' },
+    update: {},
+    create: { key: 'global' },
+  })
+
+  // Repair categories for the pricing engine — the priceable unit of work,
+  // distinct from the marketing ServiceCategory rows above. Labor-hour and
+  // risk defaults are starting points; refine them from real repair history
+  // once it exists (see /docs/IMPLEMENTATION_PLAN.md).
+  const repairCategories = [
+    {
+      slug: 'iphone-ipad-board-repair',
+      name: 'iPhone / iPad Board Repair',
+      riskLevel: 'MEDIUM' as const,
+      defaultLaborHours: 1.5,
+      defaultDiagnosticHours: 0.5,
+      defaultPartsCostCents: 3500,
+    },
+    {
+      slug: 'computer-motherboard-repair',
+      name: 'Computer Motherboard Repair',
+      riskLevel: 'MEDIUM' as const,
+      defaultLaborHours: 2,
+      defaultDiagnosticHours: 0.75,
+      defaultPartsCostCents: 4500,
+    },
+    {
+      slug: 'gpu-repair',
+      name: 'GPU Repair',
+      riskLevel: 'MEDIUM' as const,
+      defaultLaborHours: 2.5,
+      defaultDiagnosticHours: 0.75,
+      defaultPartsCostCents: 6000,
+    },
+    {
+      slug: 'ps5-motherboard-repair',
+      name: 'PS5 Motherboard Repair',
+      riskLevel: 'MEDIUM' as const,
+      defaultLaborHours: 2,
+      defaultDiagnosticHours: 0.5,
+      defaultPartsCostCents: 4000,
+    },
+    {
+      slug: 'xbox-motherboard-repair',
+      name: 'Xbox Motherboard Repair',
+      riskLevel: 'MEDIUM' as const,
+      defaultLaborHours: 2,
+      defaultDiagnosticHours: 0.5,
+      defaultPartsCostCents: 4000,
+    },
+    {
+      slug: 'nintendo-switch-repair',
+      name: 'Nintendo Switch Board Repair',
+      riskLevel: 'LOW' as const,
+      defaultLaborHours: 1.5,
+      defaultDiagnosticHours: 0.5,
+      defaultPartsCostCents: 2500,
+    },
+    {
+      slug: 'automotive-ecm-bcm-tcm-repair',
+      name: 'Automotive ECM / BCM / TCM Repair',
+      riskLevel: 'HIGH' as const,
+      defaultLaborHours: 3,
+      defaultDiagnosticHours: 1.5,
+      defaultPartsCostCents: 8000,
+    },
+    {
+      slug: 'asic-mining-board-repair',
+      name: 'ASIC / Mining Hashboard Repair',
+      riskLevel: 'MEDIUM' as const,
+      defaultLaborHours: 2,
+      defaultDiagnosticHours: 0.5,
+      defaultPartsCostCents: 5000,
+    },
+    {
+      slug: 'aviation-electronics-repair',
+      name: 'Aviation Electronics Repair',
+      riskLevel: 'HIGH' as const,
+      defaultLaborHours: 4,
+      defaultDiagnosticHours: 2,
+      defaultPartsCostCents: 12000,
+    },
+    {
+      slug: 'tv-board-repair',
+      name: 'TV Board Repair',
+      riskLevel: 'LOW' as const,
+      defaultLaborHours: 1,
+      defaultDiagnosticHours: 0.5,
+      defaultPartsCostCents: 2000,
+    },
+  ]
+
+  for (const category of repairCategories) {
+    await prisma.repairCategory.upsert({
+      where: { slug: category.slug },
+      update: {
+        name: category.name,
+        riskLevel: category.riskLevel,
+        defaultLaborHours: category.defaultLaborHours,
+        defaultDiagnosticHours: category.defaultDiagnosticHours,
+        defaultPartsCostCents: category.defaultPartsCostCents,
+      },
+      create: category,
+    })
+  }
+
   console.log('Seed complete.')
 }
 
