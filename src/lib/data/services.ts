@@ -63,11 +63,11 @@ export const services: ServiceContent[] = [
   {
     slug: 'advanced-electronics-repair',
     category: 'board-level',
-    name: 'Advanced Electronics Repair',
+    name: 'Board-Level Electronics Repair',
     shortSummary:
       'Component-level diagnostics and repair for devices, boards, and systems that standard repair shops turn away.',
-    heroHeadline: 'Advanced Electronics Repair & Reprogramming',
-    metaTitle: 'Advanced Electronics Repair in Harlingen & the Rio Grande Valley',
+    heroHeadline: 'Board-Level Electronics Repair & Reprogramming',
+    metaTitle: 'Board-Level Electronics Repair in Harlingen & the Rio Grande Valley',
     metaDescription:
       'Component-level diagnostics and board-level repair for phones, computers, GPUs, game consoles, automotive modules, aviation electronics, and ASIC hardware. Serving Harlingen to Mission, TX.',
     intro: [

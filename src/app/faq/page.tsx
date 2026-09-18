@@ -22,7 +22,7 @@ export default function FaqPage() {
       <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
         <p className="eyebrow">Frequently Asked Questions</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-lab-text sm:text-4xl">
-          Advanced Electronics Repair FAQ
+          TraceWorks Lab Repair FAQ
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-lab-muted sm:text-base">
           Answers to common questions about board-level repair, component-level repair,
