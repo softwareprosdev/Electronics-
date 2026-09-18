@@ -721,4 +721,5 @@ model InboundEmailAck {
   repliedAt   DateTime @default(now())
 
   @@index([mailboxId])
+  @@index([fromAddress, repliedAt])
 }

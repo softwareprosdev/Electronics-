@@ -23,6 +23,19 @@ const SKIP_SUBJECT_PATTERNS = [
 
 const ACK_TEXT = `Thanks for reaching out to ${siteConfig.name}. This confirms we received your message, and a technician will follow up shortly. If this is time-sensitive, you can reach us directly at ${siteConfig.phoneDisplay}.`
 
+// Never auto-reply to our own domain. Form notifications are sent from
+// noreply@ to info@/repairs@, which would otherwise trigger an
+// acknowledgment back at ourselves — and because every hop between two
+// monitored mailboxes creates a NEW thread, the per-thread guard below
+// would not stop that from running away.
+const OWN_DOMAIN = siteConfig.email.split('@')[1]?.toLowerCase()
+
+// Classic vacation-autoresponder protection: at most one automated reply to
+// the same address per day, whatever thread it arrives on. This is the
+// backstop that breaks a loop with an external autoresponder whose subject
+// line doesn't match SKIP_SUBJECT_PATTERNS.
+const ACK_THROTTLE_HOURS = 24
+
 export async function POST(request: Request) {
   const rawBody = await request.text()
   const apiKey = process.env.EMAIL_API_KEY
@@ -60,6 +73,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true, skipped: 'automated-subject' })
   }
 
+  // Match the root domain and any subdomain of it. Bird relays our own
+  // outbound mail with a bounce-style envelope-from on send.<domain>, and
+  // `from` here is the envelope address, so a plain "@<domain>" check would
+  // miss our own notification mail entirely.
+  const senderDomain = from.toLowerCase().split('@').pop() ?? ''
+  const isOwnDomain =
+    !!OWN_DOMAIN && (senderDomain === OWN_DOMAIN || senderDomain.endsWith(`.${OWN_DOMAIN}`))
+
+  if (isOwnDomain) {
+    console.log(`[bird-webhook] skipping mail from our own domain: ${from}`)
+    return NextResponse.json({ received: true, skipped: 'own-domain' })
+  }
+
+  const throttleCutoff = new Date(Date.now() - ACK_THROTTLE_HOURS * 60 * 60 * 1000)
+  const recentAckToSender = await prisma.inboundEmailAck.findFirst({
+    where: { fromAddress: from, repliedAt: { gte: throttleCutoff } },
+  })
+
+  if (recentAckToSender) {
+    console.log(`[bird-webhook] ${from} already acknowledged within ${ACK_THROTTLE_HOURS}h, skipping.`)
+    return NextResponse.json({ received: true, skipped: 'sender-throttled' })
+  }
+
   const alreadyAcknowledged = await prisma.inboundEmailAck.findUnique({
     where: { threadId: thread_id },
   })
@@ -88,7 +124,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true, skipped: 'already-acknowledged' })
   }
 
-  await replyInThread({ threadId: thread_id, messageId: message_id, text: ACK_TEXT })
+  const reply = await replyInThread({
+    threadId: thread_id,
+    messageId: message_id,
+    text: ACK_TEXT,
+  })
+
+  if (!reply) {
+    // The row above doubles as a lock against duplicate deliveries, so it has
+    // to come out again when the send fails — otherwise the thread stays
+    // marked acknowledged forever and the customer never gets a reply. The
+    // 500 tells Bird to retry, which covers transient failures.
+    await prisma.inboundEmailAck.delete({ where: { threadId: thread_id } }).catch(() => {})
+    console.error(`[bird-webhook] reply failed for thread=${thread_id}; ack row rolled back.`)
+    return NextResponse.json({ error: 'Reply failed' }, { status: 500 })
+  }
 
   return NextResponse.json({ received: true })
 }
