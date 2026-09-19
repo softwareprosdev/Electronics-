@@ -153,6 +153,15 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Mailing address — required for mail-in/ship-in service so a repaired
+  // device or board has somewhere to be shipped back to; also serves as a
+  // basic identity-verification signal for trade/fraud review.
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  zip          String?
+
   businessAccount   BusinessAccount? @relation(fields: [businessAccountId], references: [id])
   businessAccountId String?
 

@@ -9,6 +9,14 @@ const accountTypes = [
   { value: 'refurbisher', label: 'Refurbisher' },
 ]
 
+const monthlyVolumeOptions = [
+  '1-5 repairs/month',
+  '6-15 repairs/month',
+  '16-30 repairs/month',
+  '31-50 repairs/month',
+  '50+ repairs/month',
+]
+
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
 export function BusinessAccountForm() {
@@ -83,7 +91,26 @@ export function BusinessAccountForm() {
           ))}
         </select>
       </div>
-      <Field label="Approximate Monthly Repair Volume" name="monthlyVolume" className="sm:col-span-2" />
+      <div className="sm:col-span-2">
+        <label htmlFor="monthlyVolume" className="text-xs font-semibold uppercase tracking-wide text-lab-muted">
+          Approximate Monthly Repair Volume
+        </label>
+        <select
+          id="monthlyVolume"
+          name="monthlyVolume"
+          defaultValue=""
+          className="mt-2 w-full rounded-sm border border-lab-line bg-lab-panel2 px-3 py-2 text-sm text-lab-text focus:border-lab-accent"
+        >
+          <option value="" disabled>
+            Select a range…
+          </option>
+          {monthlyVolumeOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
       <TextArea label="Equipment Types You Handle" name="equipmentTypes" className="sm:col-span-2" />
       <TextArea label="Current Outsourcing Needs" name="outsourcingNeeds" className="sm:col-span-2" />
 

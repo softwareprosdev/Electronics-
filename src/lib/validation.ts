@@ -20,7 +20,7 @@ export const servicePreferenceEnum = z.enum([
   'FLEET_SERVICE_ACCOUNT',
 ])
 
-export const repairRequestSchema = z.object({
+const baseRepairRequestSchema = z.object({
   // Step 1 — customer
   name: z.string().trim().min(2, 'Name is required').max(120),
   email: z.string().trim().email('A valid email is required').max(200),
@@ -46,14 +46,44 @@ export const repairRequestSchema = z.object({
   hasNoDisplay: z.boolean().default(false),
   hasBootFailure: z.boolean().default(false),
 
-  // Step 5 — service preference
+  // Step 5 — service preference + mailing address (required for
+  // mail-in/ship-in, since that's the address the repaired item ships back
+  // to; optional otherwise but still collected when offered).
   servicePreference: servicePreferenceEnum,
+  addressLine1: z.string().trim().max(200).optional().or(z.literal('')),
+  addressLine2: z.string().trim().max(200).optional().or(z.literal('')),
+  city: z.string().trim().max(120).optional().or(z.literal('')),
+  state: z.string().trim().max(60).optional().or(z.literal('')),
+  zip: z.string().trim().max(20).optional().or(z.literal('')),
 
   // honeypot
   website: z.string().max(0).optional().or(z.literal('')),
 })
 
-export type RepairRequestInput = z.infer<typeof repairRequestSchema>
+const SHIPPING_SERVICE_PREFERENCES = new Set(['MAIL_IN', 'SHIP_IN'])
+
+export const repairRequestSchema = baseRepairRequestSchema.superRefine((data, ctx) => {
+  if (!SHIPPING_SERVICE_PREFERENCES.has(data.servicePreference)) return
+
+  const required: Array<[keyof typeof data, string]> = [
+    ['addressLine1', 'Street address'],
+    ['city', 'City'],
+    ['state', 'State'],
+    ['zip', 'ZIP code'],
+  ]
+
+  for (const [field, label] of required) {
+    if (!data[field]) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [field],
+        message: `${label} is required for mail-in/ship-in service so we know where to send your device back.`,
+      })
+    }
+  }
+})
+
+export type RepairRequestInput = z.infer<typeof baseRepairRequestSchema>
 
 export const contactSubmissionSchema = z.object({
   name: z.string().trim().min(2).max(120),

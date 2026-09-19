@@ -5,6 +5,7 @@ import { getClientKey, rateLimit } from '@/lib/rate-limit'
 import { sendEmail } from '@/lib/notify'
 import { siteConfig } from '@/lib/site-config'
 import { isTrustedOrigin } from '@/lib/csrf'
+import { verifyEmailDeliverable } from '@/lib/email-verify'
 
 const MAX_REQUEST_BODY_BYTES = 32 * 1024 // plain JSON, generous but bounded
 
@@ -48,6 +49,11 @@ export async function POST(request: Request) {
 
   const { name, email, phone, message, type } = parsed.data
 
+  const emailCheck = await verifyEmailDeliverable(email)
+  if (!emailCheck.deliverable) {
+    return NextResponse.json({ error: emailCheck.reason }, { status: 400 })
+  }
+
   try {
     await prisma.contactSubmission.create({
       data: { name, email, phone: phone || undefined, message, type },
@@ -68,3 +74,7 @@ export async function POST(request: Request) {
     )
   }
 }
+
+// verifyEmailDeliverable() uses Node's dns module, which requires the
+// Node.js runtime rather than the Edge runtime.
+export const runtime = 'nodejs'

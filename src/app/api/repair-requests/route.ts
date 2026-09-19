@@ -7,6 +7,7 @@ import { sendEmail } from '@/lib/notify'
 import { siteConfig } from '@/lib/site-config'
 import { AttachmentValidationError, storeAttachment } from '@/lib/storage'
 import { isTrustedOrigin } from '@/lib/csrf'
+import { verifyEmailDeliverable } from '@/lib/email-verify'
 
 const MAX_REQUEST_BODY_BYTES = 24 * 1024 * 1024 // 24MB — leaves headroom under typical platform limits
 
@@ -81,15 +82,34 @@ export async function POST(request: Request) {
 
   const data = parsed.data
 
+  const emailCheck = await verifyEmailDeliverable(data.email)
+  if (!emailCheck.deliverable) {
+    return NextResponse.json({ error: emailCheck.reason }, { status: 400 })
+  }
+
   try {
     const customer = await prisma.customer.upsert({
       where: { email: data.email },
-      update: { name: data.name, phone: data.phone, company: data.company || undefined },
+      update: {
+        name: data.name,
+        phone: data.phone,
+        company: data.company || undefined,
+        addressLine1: data.addressLine1 || undefined,
+        addressLine2: data.addressLine2 || undefined,
+        city: data.city || undefined,
+        state: data.state || undefined,
+        zip: data.zip || undefined,
+      },
       create: {
         name: data.name,
         email: data.email,
         phone: data.phone,
         company: data.company || undefined,
+        addressLine1: data.addressLine1 || undefined,
+        addressLine2: data.addressLine2 || undefined,
+        city: data.city || undefined,
+        state: data.state || undefined,
+        zip: data.zip || undefined,
       },
     })
 
