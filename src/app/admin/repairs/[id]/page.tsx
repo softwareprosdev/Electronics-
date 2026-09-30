@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { RepairStatusForm } from '@/components/admin/RepairStatusForm'
 import { DiagnosticForm } from '@/components/admin/DiagnosticForm'
 import { QuoteManager } from '@/components/admin/QuoteManager'
+import { InvoiceManager } from '@/components/admin/InvoiceManager'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +28,10 @@ export default async function AdminRepairDetailPage({
       statusHistory: { orderBy: { createdAt: 'desc' } },
       quotes: { orderBy: { createdAt: 'desc' } },
       diagnostics: { orderBy: { createdAt: 'desc' } },
+      invoices: {
+        orderBy: { createdAt: 'desc' },
+        include: { payments: { orderBy: { paidAt: 'desc' } } },
+      },
     },
   })
 
@@ -168,6 +173,29 @@ export default async function AdminRepairDetailPage({
                 sentAt: quote.sentAt ? quote.sentAt.toISOString() : null,
                 respondedAt: quote.respondedAt ? quote.respondedAt.toISOString() : null,
                 createdAt: quote.createdAt.toISOString(),
+              }))}
+            />
+          </div>
+
+          <div className="panel p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">Invoices</h2>
+            <InvoiceManager
+              repairId={repair.id}
+              initialInvoices={repair.invoices.map((invoice) => ({
+                id: invoice.id,
+                invoiceNumber: invoice.invoiceNumber,
+                amountCents: invoice.amountCents,
+                status: invoice.status,
+                dueDate: invoice.dueDate ? invoice.dueDate.toISOString() : null,
+                notes: invoice.notes,
+                createdAt: invoice.createdAt.toISOString(),
+                payments: invoice.payments.map((p) => ({
+                  id: p.id,
+                  amountCents: p.amountCents,
+                  method: p.method,
+                  transactionReference: p.transactionReference,
+                  paidAt: p.paidAt.toISOString(),
+                })),
               }))}
             />
           </div>
