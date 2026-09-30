@@ -44,6 +44,45 @@ body {
       linear-gradient(90deg, rgba(124, 147, 168, 0.05) 1px, transparent 1px);
     background-size: 32px 32px;
   }
+
+  /* Instrument-panel corner brackets — a targeting-reticle mark on the
+     top-left/bottom-right corners, like a scope or measurement readout
+     rather than a generic rounded card. */
+  .readout {
+    @apply relative border border-lab-line bg-lab-panel;
+  }
+  .readout::before,
+  .readout::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+  }
+  .readout::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid theme('colors.lab.accent');
+    border-left: 2px solid theme('colors.lab.accent');
+  }
+  .readout::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid theme('colors.lab.accent');
+    border-right: 2px solid theme('colors.lab.accent');
+  }
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.6);
+  }
 }
 
 ::selection {
