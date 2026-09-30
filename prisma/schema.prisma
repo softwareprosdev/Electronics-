@@ -139,6 +139,13 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  // Self-service password reset. Only a SHA-256 hash of the reset token is
+  // ever stored — the raw token exists only in the emailed link and the
+  // requester's browser, same principle as passwordHash never storing a
+  // plaintext password.
+  passwordResetTokenHash String?   @unique
+  passwordResetExpiresAt DateTime?
+
   technician Technician?
   auditLogs  AuditLog[]
 
