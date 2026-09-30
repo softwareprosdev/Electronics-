@@ -39,6 +39,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             >
               Customers
             </Link>
+            <Link
+              href="/admin/devices"
+              className="rounded-sm px-3 py-2 text-sm text-lab-text hover:bg-lab-panel2"
+            >
+              Devices
+            </Link>
             {canViewPricing && (
               <>
                 <Link
