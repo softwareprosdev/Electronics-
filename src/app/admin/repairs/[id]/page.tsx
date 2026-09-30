@@ -4,6 +4,7 @@ import { getAdminSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { RepairStatusForm } from '@/components/admin/RepairStatusForm'
 import { DiagnosticForm } from '@/components/admin/DiagnosticForm'
+import { QuoteManager } from '@/components/admin/QuoteManager'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export default async function AdminRepairDetailPage({
       device: true,
       attachments: true,
       statusHistory: { orderBy: { createdAt: 'desc' } },
-      quotes: true,
+      quotes: { orderBy: { createdAt: 'desc' } },
       diagnostics: { orderBy: { createdAt: 'desc' } },
     },
   })
@@ -152,6 +153,23 @@ export default async function AdminRepairDetailPage({
               </ul>
             )}
             <DiagnosticForm repairId={repair.id} />
+          </div>
+
+          <div className="panel p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">Quotes</h2>
+            <QuoteManager
+              repairId={repair.id}
+              initialQuotes={repair.quotes.map((quote) => ({
+                id: quote.id,
+                amountCents: quote.amountCents,
+                currency: quote.currency,
+                status: quote.status,
+                notes: quote.notes,
+                sentAt: quote.sentAt ? quote.sentAt.toISOString() : null,
+                respondedAt: quote.respondedAt ? quote.respondedAt.toISOString() : null,
+                createdAt: quote.createdAt.toISOString(),
+              }))}
+            />
           </div>
 
           <div className="panel p-6">
