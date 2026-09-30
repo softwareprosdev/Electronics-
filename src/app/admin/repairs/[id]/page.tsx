@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { RepairStatusForm } from '@/components/admin/RepairStatusForm'
+import { DiagnosticForm } from '@/components/admin/DiagnosticForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export default async function AdminRepairDetailPage({
       attachments: true,
       statusHistory: { orderBy: { createdAt: 'desc' } },
       quotes: true,
-      diagnostics: true,
+      diagnostics: { orderBy: { createdAt: 'desc' } },
     },
   })
 
@@ -113,6 +114,44 @@ export default async function AdminRepairDetailPage({
                 ))}
               </ul>
             )}
+          </div>
+
+          <div className="panel p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">
+              Diagnostics ({repair.diagnostics.length})
+            </h2>
+            {repair.diagnostics.length === 0 ? (
+              <p className="mt-3 text-sm text-lab-muted">No diagnostic entries yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-4">
+                {repair.diagnostics.map((diagnostic) => (
+                  <li key={diagnostic.id} className="border-b border-lab-line/60 pb-3 text-sm last:border-0">
+                    <p className="text-lab-text">{diagnostic.findings}</p>
+                    {diagnostic.rootCause && (
+                      <p className="mt-1 text-xs text-lab-muted">
+                        Root cause: {diagnostic.rootCause}
+                      </p>
+                    )}
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-lab-muted">
+                      {diagnostic.isRepairable !== null && (
+                        <span
+                          className={`rounded-sm border px-2 py-0.5 ${
+                            diagnostic.isRepairable
+                              ? 'border-lab-accent/40 text-lab-accent'
+                              : 'border-lab-danger/40 text-lab-danger'
+                          }`}
+                        >
+                          {diagnostic.isRepairable ? 'Repairable' : 'Not repairable'}
+                        </span>
+                      )}
+                      <span>{diagnostic.performedBy}</span>
+                      <span>{diagnostic.createdAt.toLocaleString()}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <DiagnosticForm repairId={repair.id} />
           </div>
 
           <div className="panel p-6">
