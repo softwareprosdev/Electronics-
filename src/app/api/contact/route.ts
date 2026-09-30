@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     })
 
     await sendEmail({
-      to: siteConfig.email,
+      to: siteConfig.notifyEmail,
       subject: `New ${type.replace('_', ' ').toLowerCase()} contact submission`,
       body: `From ${name} (${email}): ${message}`,
     })

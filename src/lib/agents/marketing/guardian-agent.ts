@@ -55,7 +55,7 @@ export async function runFunnelCheckIngest(
 
     if (evaluation.status !== 'OK') {
       await sendEmail({
-        to: siteConfig.email,
+        to: siteConfig.notifyEmail,
         subject: `[Funnel Alert] ${submission.target} is ${evaluation.status}`,
         body: evaluation.reason,
       }).catch((err) => {

@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     // create new applications or update ones still pending review.
     if (existing?.isApproved) {
       await sendEmail({
-        to: siteConfig.email,
+        to: siteConfig.notifyEmail,
         subject: `Duplicate trade account submission: ${shopName}`,
         body: `A new submission was received for an already-approved account (${email}). No changes were made to the existing record.`,
       })
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
     })
 
     await sendEmail({
-      to: siteConfig.email,
+      to: siteConfig.notifyEmail,
       subject: `New trade account request: ${shopName}`,
       body: `Contact: ${contactName} (${email}). Account type: ${accountType}.`,
     })
