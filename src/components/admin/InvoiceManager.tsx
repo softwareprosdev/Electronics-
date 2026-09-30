@@ -149,9 +149,26 @@ function InvoiceRow({
   const [reference, setReference] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [checkoutUrl, setCheckoutUrl] = useState('')
+  const [creatingCheckout, setCreatingCheckout] = useState(false)
 
   const totalPaid = invoice.payments.reduce((sum, p) => sum + p.amountCents, 0)
   const balanceDue = invoice.amountCents - totalPaid
+
+  async function handleGetPaymentLink() {
+    setError('')
+    setCreatingCheckout(true)
+    try {
+      const response = await fetch(`/api/admin/invoices/${invoice.id}/checkout`, { method: 'POST' })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Failed to create payment link.')
+      setCheckoutUrl(data.url)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create payment link.')
+    } finally {
+      setCreatingCheckout(false)
+    }
+  }
 
   async function handleMarkSent() {
     const response = await fetch(`/api/admin/invoices/${invoice.id}`, {
@@ -240,7 +257,25 @@ function InvoiceRow({
             {showPaymentForm ? 'Cancel' : 'Record Payment'}
           </button>
         )}
+        {balanceDue > 0 && invoice.status !== 'VOID' && (
+          <button
+            onClick={handleGetPaymentLink}
+            disabled={creatingCheckout}
+            className="rounded-sm border border-lab-line px-3 py-1 text-xs text-lab-text hover:bg-lab-panel2 disabled:opacity-60"
+          >
+            {creatingCheckout ? 'Creating…' : 'Get Stripe Payment Link'}
+          </button>
+        )}
       </div>
+
+      {checkoutUrl && (
+        <div className="mt-3 rounded-sm border border-lab-accent/40 bg-lab-accent/5 p-3 text-xs">
+          <p className="text-lab-muted">Send this link to the customer to pay by card:</p>
+          <a href={checkoutUrl} target="_blank" rel="noreferrer" className="break-all text-lab-accent">
+            {checkoutUrl}
+          </a>
+        </div>
+      )}
 
       {showPaymentForm && (
         <form onSubmit={handleRecordPayment} className="mt-3 space-y-2 rounded-sm border border-lab-line p-3">
