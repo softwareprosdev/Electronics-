@@ -32,7 +32,7 @@ export default async function AdminRepairDetailPage({
 
   return (
     <div>
-      <Link href="/admin" className="text-xs text-lab-muted hover:text-lab-accent">
+      <Link href="/admin/repairs" className="text-xs text-lab-muted hover:text-lab-accent">
         &larr; Back to Repair Queue
       </Link>
 
