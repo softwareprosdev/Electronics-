@@ -183,6 +183,7 @@ model User {
   auditLogs  AuditLog[]
   assignedLeads Lead[]
   paymentsRecorded Payment[]
+  inventoryTransactions InventoryTransaction[]
 
   updatedPricingRules     PricingRule[]           @relation("PricingRuleUpdatedBy")
   reviewedRecommendations PricingRecommendation[] @relation("RecommendationReviewedBy")
@@ -362,6 +363,7 @@ model Repair {
   messages               Message[]
   statusHistory          RepairStatusEvent[]
   pricingRecommendations PricingRecommendation[]
+  inventoryTransactions  InventoryTransaction[]
 
   @@index([customerId])
   @@index([status])
@@ -485,6 +487,78 @@ model Message {
   body       String
   createdAt  DateTime      @default(now())
 
+  @@index([repairId])
+}
+
+// ---------------------------------------------------------------------------
+// Inventory & Suppliers
+// ---------------------------------------------------------------------------
+
+enum InventoryTransactionType {
+  PURCHASE
+  RECEIVE
+  ALLOCATE
+  USE
+  RETURN
+  ADJUSTMENT
+  SCRAP
+  TRANSFER
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  contactName String?
+  email     String?
+  phone     String?
+  website   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inventoryItems InventoryItem[]
+}
+
+model InventoryItem {
+  id                String   @id @default(cuid())
+  sku               String   @unique
+  partNumber        String?
+  manufacturer      String?
+  description       String
+  category          String?
+  costCents         Int      @default(0)
+  sellingPriceCents Int?
+  quantityOnHand    Int      @default(0)
+  minimumQuantity   Int      @default(0)
+  location          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  supplierId String?
+
+  transactions InventoryTransaction[]
+
+  @@index([supplierId])
+}
+
+// An immutable ledger entry — quantityOnHand is a derived cache updated
+// alongside each transaction, never edited directly, so the transaction
+// history always explains how the current count was reached.
+model InventoryTransaction {
+  id        String                   @id @default(cuid())
+  item      InventoryItem            @relation(fields: [itemId], references: [id])
+  itemId    String
+  type      InventoryTransactionType
+  quantity  Int
+  repair    Repair?                  @relation(fields: [repairId], references: [id])
+  repairId  String?
+  notes     String?
+  createdBy User?                    @relation(fields: [createdById], references: [id])
+  createdById String?
+  createdAt DateTime                 @default(now())
+
+  @@index([itemId])
   @@index([repairId])
 }
 
