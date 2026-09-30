@@ -55,8 +55,22 @@ export async function POST(request: Request) {
   }
 
   try {
-    await prisma.contactSubmission.create({
+    const submission = await prisma.contactSubmission.create({
       data: { name, email, phone: phone || undefined, message, type },
+    })
+
+    // Every contact-form submission also becomes a workable Lead — the
+    // ContactSubmission row above is the immutable audit log, this is the
+    // pipeline record staff actually move through stages.
+    await prisma.lead.create({
+      data: {
+        name,
+        email,
+        phone: phone || undefined,
+        problemDescription: message,
+        source: 'WEBSITE',
+        contactSubmissionId: submission.id,
+      },
     })
 
     await sendEmail({
