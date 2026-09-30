@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
 import { isTrustedOrigin } from '@/lib/csrf'
+import { recordInvoicePayment } from '@/lib/invoicing'
 
 const createSchema = z.object({
   amountCents: z.number().int().min(1).max(100_000_00),
@@ -34,37 +35,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'A valid payment amount and method are required.' }, { status: 400 })
   }
 
-  const invoice = await prisma.invoice.findUnique({ where: { id }, include: { payments: true } })
-  if (!invoice) {
-    return NextResponse.json({ error: 'Invoice not found.' }, { status: 404 })
-  }
-
   const { amountCents, method, transactionReference } = parsed.data
 
   try {
-    const [payment] = await prisma.$transaction(async (tx) => {
-      const created = await tx.payment.create({
-        data: {
-          invoiceId: id,
-          amountCents,
-          method,
-          transactionReference: transactionReference || undefined,
-          recordedById: session.sub,
-        },
-      })
-
-      const totalPaid =
-        invoice.payments.reduce((sum, p) => sum + p.amountCents, 0) + amountCents
-      const nextStatus =
-        totalPaid >= invoice.amountCents
-          ? 'PAID'
-          : totalPaid > 0
-            ? 'PARTIALLY_PAID'
-            : invoice.status
-
-      await tx.invoice.update({ where: { id }, data: { status: nextStatus } })
-
-      return [created]
+    const result = await recordInvoicePayment({
+      invoiceId: id,
+      amountCents,
+      method,
+      transactionReference,
+      recordedById: session.sub,
     })
 
     await prisma.auditLog.create({
@@ -73,20 +52,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         action: 'RECORD_PAYMENT',
         entityType: 'Invoice',
         entityId: id,
-        metadata: { paymentId: payment.id, amountCents, method },
+        metadata: { paymentId: result.payment.id, amountCents, method },
       },
     })
 
-    const updatedInvoice = await prisma.invoice.findUnique({
-      where: { id },
-      include: { payments: { orderBy: { paidAt: 'desc' } } },
-    })
-
     return NextResponse.json(
-      { success: true, payment, invoice: updatedInvoice },
+      { success: true, payment: result.payment, invoice: result.invoice },
       { status: 201, headers: { 'Cache-Control': 'no-store' } },
     )
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === 'INVOICE_NOT_FOUND') {
+      return NextResponse.json({ error: 'Invoice not found.' }, { status: 404 })
+    }
     return NextResponse.json({ error: 'Failed to record payment.' }, { status: 500 })
   }
 }
