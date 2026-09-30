@@ -182,6 +182,7 @@ model User {
   technician Technician?
   auditLogs  AuditLog[]
   assignedLeads Lead[]
+  paymentsRecorded Payment[]
 
   updatedPricingRules     PricingRule[]           @relation("PricingRuleUpdatedBy")
   reviewedRecommendations PricingRecommendation[] @relation("RecommendationReviewedBy")
@@ -356,6 +357,7 @@ model Repair {
 
   diagnostics            Diagnostic[]
   quotes                 Quote[]
+  invoices               Invoice[]
   attachments            Attachment[]
   messages               Message[]
   statusHistory          RepairStatusEvent[]
@@ -405,6 +407,57 @@ model Quote {
   updatedAt   DateTime    @updatedAt
 
   @@index([repairId])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  VOID
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  CARD
+  OTHER
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  repair        Repair        @relation(fields: [repairId], references: [id])
+  repairId      String
+  quoteId       String?
+  amountCents   Int
+  currency      String        @default("USD")
+  status        InvoiceStatus @default(DRAFT)
+  dueDate       DateTime?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  payments Payment[]
+
+  @@index([repairId])
+  @@index([status])
+}
+
+model Payment {
+  id                  String        @id @default(cuid())
+  invoice             Invoice       @relation(fields: [invoiceId], references: [id])
+  invoiceId           String
+  amountCents         Int
+  method              PaymentMethod @default(CARD)
+  transactionReference String?
+  paidAt              DateTime      @default(now())
+  recordedBy          User?         @relation(fields: [recordedById], references: [id])
+  recordedById        String?
+  createdAt           DateTime      @default(now())
+
+  @@index([invoiceId])
 }
 
 model Attachment {

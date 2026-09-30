@@ -11,9 +11,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     session && MARKETING_VIEW_ROLES.includes(session.role as (typeof MARKETING_VIEW_ROLES)[number])
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
+    <div className="mx-auto flex min-h-[70vh] max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:px-8 print:block print:max-w-none print:p-0">
       {session && (
-        <aside className="panel h-fit w-full flex-none p-4 lg:w-56">
+        <aside className="panel h-fit w-full flex-none p-4 print:hidden lg:w-56">
           <p className="text-xs font-semibold uppercase tracking-wide text-lab-muted">
             Laboratory Admin
           </p>
