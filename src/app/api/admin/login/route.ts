@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { ADMIN_SESSION_COOKIE, adminSessionCookieOptions, createAdminSessionToken } from '@/lib/auth'
 import { getClientKey, rateLimit } from '@/lib/rate-limit'
 import { isTrustedOrigin } from '@/lib/csrf'
+import { DUMMY_PASSWORD_HASH, hashPassword, isArgon2Hash, verifyPassword } from '@/lib/password'
 
 const loginSchema = z.object({
   email: z.string().trim().email().max(200),
@@ -45,12 +45,11 @@ export async function POST(request: Request) {
     { status: 401, headers: { 'Cache-Control': 'no-store' } },
   )
 
-  // Always run a bcrypt comparison, even for a nonexistent/inactive user,
+  // Always run a password comparison, even for a nonexistent/inactive user,
   // against a fixed dummy hash — otherwise the early return makes this
   // endpoint measurably faster for unknown emails than for known ones,
   // letting an attacker enumerate valid admin accounts via response timing.
-  const DUMMY_HASH = '$2a$12$CwTycUXWue0Thq9StjUM0uJ8Dl0lHEMbP5UYo5U/Sc.8v6yqNJa6.'
-  const passwordMatches = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH)
+  const passwordMatches = await verifyPassword(user?.passwordHash ?? DUMMY_PASSWORD_HASH, password)
 
   if (!user || !user.isActive || !passwordMatches) {
     return genericError
@@ -58,7 +57,15 @@ export async function POST(request: Request) {
 
   const token = await createAdminSessionToken({ sub: user.id, email: user.email, role: user.role })
 
-  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+  // Transparent migration: an account created before the Argon2id switch
+  // still has a bcrypt hash. Rehash it here so every account converges to
+  // Argon2id after its first login post-migration, with no forced reset.
+  const rehash = isArgon2Hash(user.passwordHash) ? undefined : await hashPassword(password)
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date(), passwordHash: rehash },
+  })
   await prisma.auditLog.create({
     data: { actorId: user.id, action: 'LOGIN', entityType: 'User', entityId: user.id },
   })

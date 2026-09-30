@@ -34,7 +34,7 @@ services:
       NEXT_PUBLIC_BUSINESS_EMAIL: repairs@example-electronics-lab.com
       ADMIN_SESSION_SECRET: change-this-to-a-long-random-string-in-production
       ADMIN_EMAIL: admin@example-electronics-lab.com
-      # Generate with: node -e "require('bcryptjs').hash('yourpassword',12).then(console.log)"
+      # Generate with: node -e "require('@node-rs/argon2').hash('yourpassword',{algorithm:2,memoryCost:19456,timeCost:2,parallelism:1}).then(console.log)"
       ADMIN_PASSWORD_HASH: ''
       EMAIL_PROVIDER: console
       SMS_PROVIDER: console

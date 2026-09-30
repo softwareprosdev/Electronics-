@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
 import { isTrustedOrigin } from '@/lib/csrf'
 import { getClientKey, rateLimit } from '@/lib/rate-limit'
+import { hashPassword, verifyPassword } from '@/lib/password'
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1).max(200),
@@ -55,12 +55,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Account not found.' }, { status: 404 })
   }
 
-  const currentMatches = await bcrypt.compare(currentPassword, user.passwordHash)
+  const currentMatches = await verifyPassword(user.passwordHash, currentPassword)
   if (!currentMatches) {
     return NextResponse.json({ error: 'Current password is incorrect.' }, { status: 401 })
   }
 
-  const newHash = await bcrypt.hash(newPassword, 12)
+  const newHash = await hashPassword(newPassword)
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash: newHash } })
 
   await prisma.auditLog.create({
