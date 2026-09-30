@@ -124,6 +124,39 @@ enum LeadStatus {
   CLOSED
 }
 
+enum LeadSource {
+  WEBSITE
+  GOOGLE
+  FACEBOOK
+  INSTAGRAM
+  PHONE
+  WALK_IN
+  REFERRAL
+  RETURNING_CUSTOMER
+  DEALER
+  OTHER
+}
+
+enum LeadPipelineStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  DIAGNOSTIC_PENDING
+  ESTIMATE_PENDING
+  ESTIMATE_SENT
+  FOLLOW_UP
+  APPROVED
+  CONVERTED
+  LOST
+}
+
+enum LeadPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
 // ---------------------------------------------------------------------------
 // Identity & accounts
 // ---------------------------------------------------------------------------
@@ -148,6 +181,7 @@ model User {
 
   technician Technician?
   auditLogs  AuditLog[]
+  assignedLeads Lead[]
 
   updatedPricingRules     PricingRule[]           @relation("PricingRuleUpdatedBy")
   reviewedRecommendations PricingRecommendation[] @relation("RecommendationReviewedBy")
@@ -180,6 +214,7 @@ model Customer {
 
   repairRequests Repair[]
   messages       Message[]
+  convertedFromLead Lead?
 
   @@index([email])
   @@index([businessAccountId])
@@ -453,8 +488,46 @@ model ContactSubmission {
   internalNotes String?
   createdAt     DateTime              @default(now())
 
+  lead Lead?
+
   @@index([type])
   @@index([status])
+}
+
+// A working sales-pipeline record — distinct from ContactSubmission, which
+// is the immutable raw-submission log. A Lead is created alongside a
+// ContactSubmission (linked via contactSubmissionId) and is what staff
+// actually work: stage, priority, assignment, follow-up, and eventual
+// conversion into a Customer.
+model Lead {
+  id                 String             @id @default(cuid())
+  name               String
+  email              String
+  phone              String?
+  company            String?
+  deviceDescription  String?
+  problemDescription String?
+  source             LeadSource         @default(WEBSITE)
+  status             LeadPipelineStatus @default(NEW)
+  priority           LeadPriority       @default(NORMAL)
+  estimatedValueCents Int?
+  notes              String?
+  followUpDate       DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+  assignedToId String?
+
+  convertedCustomer   Customer? @relation(fields: [convertedCustomerId], references: [id])
+  convertedCustomerId String?   @unique
+
+  contactSubmission   ContactSubmission? @relation(fields: [contactSubmissionId], references: [id])
+  contactSubmissionId String?            @unique
+
+  @@index([status])
+  @@index([assignedToId])
+  @@index([priority])
 }
 
 // ---------------------------------------------------------------------------
