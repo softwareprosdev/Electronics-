@@ -118,6 +118,12 @@ enum ContactSubmissionType {
   MEDIA
 }
 
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
 // ---------------------------------------------------------------------------
 // Identity & accounts
 // ---------------------------------------------------------------------------
@@ -429,16 +435,19 @@ model Testimonial {
 }
 
 model ContactSubmission {
-  id        String                @id @default(cuid())
-  type      ContactSubmissionType @default(GENERAL)
-  name      String
-  email     String
-  phone     String?
-  message   String
-  metadata  Json?
-  createdAt DateTime              @default(now())
+  id            String                @id @default(cuid())
+  type          ContactSubmissionType @default(GENERAL)
+  name          String
+  email         String
+  phone         String?
+  message       String
+  metadata      Json?
+  status        LeadStatus            @default(NEW)
+  internalNotes String?
+  createdAt     DateTime              @default(now())
 
   @@index([type])
+  @@index([status])
 }
 
 // ---------------------------------------------------------------------------

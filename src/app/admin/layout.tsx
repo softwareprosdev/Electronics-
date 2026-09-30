@@ -21,6 +21,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin" className="rounded-sm px-3 py-2 text-sm text-lab-text hover:bg-lab-panel2">
               Repair Queue
             </Link>
+            <Link
+              href="/admin/leads"
+              className="rounded-sm px-3 py-2 text-sm text-lab-text hover:bg-lab-panel2"
+            >
+              Leads &amp; Inquiries
+            </Link>
             {canViewPricing && (
               <>
                 <Link
