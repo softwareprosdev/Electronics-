@@ -7,6 +7,13 @@ export const siteConfig = {
   phoneDisplay: process.env.NEXT_PUBLIC_BUSINESS_PHONE_DISPLAY || '(956) 392-1440',
   email: process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'info@traceworkslab.com',
   repairEmail: process.env.REPAIR_NOTIFY_EMAIL || 'repairs@traceworkslab.com',
+  // Where internal "you have a new lead" notifications actually get sent —
+  // deliberately separate from `email`/`repairEmail` above, which are the
+  // public-facing addresses shown on the site and used to derive
+  // OWN_DOMAIN for the inbound-webhook loop guard (see api/webhooks/bird).
+  // Changing THIS one redirects notifications without touching either of
+  // those; falls back to the public info@ address if unset.
+  notifyEmail: process.env.INTERNAL_NOTIFY_EMAIL || process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'info@traceworkslab.com',
   addressLocality: 'Harlingen',
   addressRegion: 'TX',
   serviceArea: [
