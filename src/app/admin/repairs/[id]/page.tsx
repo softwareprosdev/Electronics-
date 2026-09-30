@@ -6,6 +6,7 @@ import { RepairStatusForm } from '@/components/admin/RepairStatusForm'
 import { DiagnosticForm } from '@/components/admin/DiagnosticForm'
 import { QuoteManager } from '@/components/admin/QuoteManager'
 import { InvoiceManager } from '@/components/admin/InvoiceManager'
+import { QcPanel } from '@/components/admin/QcPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,6 +33,7 @@ export default async function AdminRepairDetailPage({
         orderBy: { createdAt: 'desc' },
         include: { payments: { orderBy: { paidAt: 'desc' } } },
       },
+      qcPassedBy: true,
     },
   })
 
@@ -198,6 +200,20 @@ export default async function AdminRepairDetailPage({
                 })),
               }))}
             />
+          </div>
+
+          <div className="panel p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">
+              Quality Control
+            </h2>
+            <div className="mt-3">
+              <QcPanel
+                repairId={repair.id}
+                qcPassedAt={repair.qcPassedAt ? repair.qcPassedAt.toISOString() : null}
+                qcPassedByName={repair.qcPassedBy?.name || null}
+                qcNotes={repair.qcNotes}
+              />
+            </div>
           </div>
 
           <div className="panel p-6">

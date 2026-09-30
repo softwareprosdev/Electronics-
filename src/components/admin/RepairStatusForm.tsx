@@ -31,6 +31,8 @@ export function RepairStatusForm({
   const [status, setStatus] = useState(currentStatus)
   const [statusNote, setStatusNote] = useState('')
   const [internalNotes, setInternalNotes] = useState(currentNotes)
+  const [qcOverrideReason, setQcOverrideReason] = useState('')
+  const [needsQcOverride, setNeedsQcOverride] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -43,15 +45,25 @@ export function RepairStatusForm({
       const response = await fetch(`/api/admin/repairs/${repairId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, statusNote, internalNotes }),
+        body: JSON.stringify({
+          status,
+          statusNote,
+          internalNotes,
+          qcOverrideReason: qcOverrideReason || undefined,
+        }),
       })
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
+        if (status === 'COMPLETED' && /has not passed QC/.test(data.error || '')) {
+          setNeedsQcOverride(true)
+        }
         throw new Error(data.error || 'Failed to update repair.')
       }
 
       setStatusNote('')
+      setQcOverrideReason('')
+      setNeedsQcOverride(false)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update repair.')
@@ -100,6 +112,20 @@ export function RepairStatusForm({
           className="mt-2 w-full rounded-sm border border-lab-line bg-lab-panel2 px-3 py-2 text-sm text-lab-text focus:border-lab-accent"
         />
       </div>
+
+      {needsQcOverride && (
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-wide text-lab-warn">
+            QC Override Reason (required to complete without QC pass)
+          </label>
+          <textarea
+            value={qcOverrideReason}
+            onChange={(event) => setQcOverrideReason(event.target.value)}
+            rows={2}
+            className="mt-2 w-full rounded-sm border border-lab-warn/40 bg-lab-panel2 px-3 py-2 text-sm text-lab-text focus:border-lab-accent"
+          />
+        </div>
+      )}
 
       {error && <p className="text-sm text-lab-danger">{error}</p>}
 

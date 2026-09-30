@@ -23,6 +23,7 @@ const updateSchema = z.object({
   status: repairStatusEnum.optional(),
   internalNotes: z.string().max(4000).optional(),
   statusNote: z.string().max(1000).optional(),
+  qcOverrideReason: z.string().trim().min(1).max(1000).optional(),
 })
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -49,7 +50,30 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Validation failed.' }, { status: 400 })
   }
 
-  const { status, internalNotes, statusNote } = parsed.data
+  const { status, internalNotes, statusNote, qcOverrideReason } = parsed.data
+
+  // Quality-control gate (spec section 54): a repair cannot become
+  // COMPLETED without QC having passed, unless an admin explicitly
+  // overrides with a logged reason.
+  let qcOverrideApplied = false
+  if (status === 'COMPLETED') {
+    const current = await prisma.repair.findUnique({
+      where: { id },
+      select: { qcPassedAt: true },
+    })
+    if (!current) {
+      return NextResponse.json({ error: 'Repair not found.' }, { status: 404 })
+    }
+    if (!current.qcPassedAt) {
+      if (!qcOverrideReason) {
+        return NextResponse.json(
+          { error: 'This repair has not passed QC yet. Record a QC pass first, or provide an override reason.' },
+          { status: 400 },
+        )
+      }
+      qcOverrideApplied = true
+    }
+  }
 
   try {
     const repair = await prisma.repair.update({
@@ -60,6 +84,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         statusHistory: status
           ? { create: { status, note: statusNote || undefined } }
           : undefined,
+        ...(qcOverrideApplied
+          ? {
+              qcPassedAt: new Date(),
+              qcPassedById: session.sub,
+              qcNotes: `OVERRIDE: ${qcOverrideReason}`,
+            }
+          : {}),
       },
     })
 

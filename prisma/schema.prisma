@@ -184,6 +184,7 @@ model User {
   assignedLeads Lead[]
   paymentsRecorded Payment[]
   inventoryTransactions InventoryTransaction[]
+  qcApprovals Repair[] @relation("RepairQcApprovals")
 
   updatedPricingRules     PricingRule[]           @relation("PricingRuleUpdatedBy")
   reviewedRecommendations PricingRecommendation[] @relation("RecommendationReviewedBy")
@@ -352,6 +353,14 @@ model Repair {
   estimatedTechnicianHours Float?
 
   internalNotes String?
+
+  // Quality control gate — see the status-update route: a repair cannot
+  // move to COMPLETED unless qcPassedAt is set, or an admin explicitly
+  // overrides with a reason (stored in qcNotes, prefixed "OVERRIDE:").
+  qcPassedAt   DateTime?
+  qcPassedBy   User?      @relation("RepairQcApprovals", fields: [qcPassedById], references: [id])
+  qcPassedById String?
+  qcNotes      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
