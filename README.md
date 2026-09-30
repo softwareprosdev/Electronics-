@@ -38,7 +38,7 @@ The site is a single Next.js application combining:
    that validates input with Zod, rate-limits by IP, and writes to Postgres
    via Prisma.
 3. **Admin dashboard** (`/admin`) — session-cookie-authenticated (JWT via
-   `jose`, bcrypt-hashed passwords), server-rendered, reads/writes the
+   `jose`, Argon2id-hashed passwords), server-rendered, reads/writes the
    repair queue directly from Postgres. Protected by `src/middleware.ts`.
 4. **Customer portal** (`/portal`) — a roadmap placeholder page. The
    database schema (`Customer`, `Repair`, `Quote`, `Message`, `Attachment`)
@@ -78,7 +78,7 @@ AI-written one.
 | Database        | PostgreSQL                                          |
 | ORM             | Prisma                                               |
 | Validation      | Zod                                                   |
-| Admin auth      | Signed JWT session cookie (`jose`) + bcrypt          |
+| Admin auth      | Signed JWT session cookie (`jose`) + Argon2id          |
 | File storage    | Abstracted adapter (`src/lib/storage.ts`), S3-ready  |
 | Email/SMS       | Provider-abstracted (`src/lib/notify.ts`)            |
 | Deployment      | Docker / docker-compose                              |
@@ -103,8 +103,12 @@ one.
 
 ### Generating an admin password hash
 
+Password hashes use Argon2id (see `src/lib/password.ts`); accounts seeded
+before this change keep working via a transparent bcrypt fallback that
+migrates to Argon2id on next login.
+
 ```bash
-node -e "require('bcryptjs').hash('yourpassword', 12).then(console.log)"
+node -e "require('@node-rs/argon2').hash('yourpassword', { algorithm: 2, memoryCost: 19456, timeCost: 2, parallelism: 1 }).then(console.log)"
 ```
 
 Put the result in `ADMIN_PASSWORD_HASH` before running the seed script (or
@@ -221,7 +225,7 @@ detection to the caller.
 | `/api/repair-requests`             | POST   | Multi-step repair request submission (multipart, up to 6 files, 8MB each, MIME- and signature-validated) |
 | `/api/contact`                     | POST   | General/business/partner/media contact form                |
 | `/api/business-accounts`           | POST   | Trade account request (upserts by email)                   |
-| `/api/admin/login`                 | POST   | Admin session login (bcrypt + signed JWT cookie)            |
+| `/api/admin/login`                 | POST   | Admin session login (Argon2id + signed JWT cookie)            |
 | `/api/admin/logout`                | POST   | Clears the admin session cookie                             |
 | `/api/admin/repairs/[id]`          | PATCH  | Update repair status / internal notes (session-protected)   |
 | `/api/pricing/recommend`           | POST   | Run the pricing orchestrator (Cost Agent + Pricing Agent), persist and return a `PricingRecommendation` (role-protected) |
@@ -325,7 +329,7 @@ guidance. Findings and fixes:
   in-memory for local dev / single-instance Docker.
 - Zod validation on every form submission (client and server).
 - Honeypot fields on all public forms.
-- Admin sessions: bcrypt password hashing, signed JWT cookies
+- Admin sessions: Argon2id password hashing, signed JWT cookies
   (`httpOnly`, `sameSite=lax`, `secure` in production), route protection
   via middleware.
 - Security headers applied globally: CSP, HSTS, X-Frame-Options,

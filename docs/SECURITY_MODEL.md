@@ -3,7 +3,7 @@
 This extends the existing security posture documented in the main
 `README.md` ("Security" section — OWASP/NIST-audited). Everything below is
 additive; none of the existing hardening (CSP, CSRF-by-Origin-check, rate
-limiting, bcrypt/JWT admin sessions, file-signature validation) is changed.
+limiting, Argon2id/JWT admin sessions, file-signature validation) is changed.
 
 ## Authorization / RBAC
 
