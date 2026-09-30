@@ -42,7 +42,7 @@ export default async function AdminLeadsPage({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-xl font-bold text-lab-text">Leads &amp; Inquiries</h1>
           <Link href="/admin" className="text-xs text-lab-muted hover:text-lab-accent">
-            &larr; Repair Queue
+            &larr; Dashboard
           </Link>
         </div>
         <p className="mt-1 text-sm text-lab-muted">

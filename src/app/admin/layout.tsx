@@ -19,6 +19,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </p>
           <nav className="mt-4 flex flex-col gap-1">
             <Link href="/admin" className="rounded-sm px-3 py-2 text-sm text-lab-text hover:bg-lab-panel2">
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/repairs"
+              className="rounded-sm px-3 py-2 text-sm text-lab-text hover:bg-lab-panel2"
+            >
               Repair Queue
             </Link>
             <Link
@@ -52,7 +58,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </Link>
             )}
           </nav>
-          <p className="mt-6 truncate text-xs text-lab-muted">{session.email}</p>
+          <Link
+            href="/admin/account"
+            className="mt-6 block truncate rounded-sm px-3 py-2 text-xs text-lab-muted hover:bg-lab-panel2 hover:text-lab-accent"
+          >
+            {session.email}
+          </Link>
           <SignOutButton />
         </aside>
       )}

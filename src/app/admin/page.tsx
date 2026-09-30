@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
-const statusOrder = [
+const OPEN_REPAIR_STATUSES = [
   'NEW',
   'UNDER_REVIEW',
   'DIAGNOSTIC_PENDING',
@@ -14,106 +14,174 @@ const statusOrder = [
   'APPROVED',
   'IN_REPAIR',
   'TESTING',
-  'COMPLETED',
   'RETURN_SHIPPING',
-  'CLOSED',
-  'UNREPAIRABLE',
 ] as const
 
-export default async function AdminDashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ status?: string }>
-}) {
+type ActivityItem = {
+  id: string
+  kind: 'repair' | 'lead' | 'business'
+  title: string
+  subtitle: string
+  href: string
+  badge: string
+  createdAt: Date
+}
+
+export default async function AdminDashboardPage() {
   const session = await getAdminSession()
   if (!session) redirect('/admin/login')
 
-  const { status: rawStatus } = await searchParams
-  const statusFilter = statusOrder.find((status) => status === rawStatus)
+  const [
+    openRepairCount,
+    newLeadCount,
+    pendingAccountCount,
+    recentRepairs,
+    recentLeads,
+    recentAccounts,
+  ] = await Promise.all([
+    prisma.repair.count({ where: { status: { in: [...OPEN_REPAIR_STATUSES] } } }),
+    prisma.contactSubmission.count({ where: { status: 'NEW' } }),
+    prisma.businessAccount.count({ where: { isApproved: false } }),
+    prisma.repair.findMany({
+      include: { customer: true, device: true },
+      orderBy: { createdAt: 'desc' },
+      take: 8,
+    }),
+    prisma.contactSubmission.findMany({ orderBy: { createdAt: 'desc' }, take: 8 }),
+    prisma.businessAccount.findMany({ orderBy: { createdAt: 'desc' }, take: 8 }),
+  ])
 
-  const repairs = await prisma.repair.findMany({
-    where: statusFilter ? { status: statusFilter } : undefined,
-    include: { customer: true, device: true },
-    orderBy: { createdAt: 'desc' },
-    take: 50,
-  })
-
-  const counts = await prisma.repair.groupBy({
-    by: ['status'],
-    _count: true,
-  })
-
-  const countMap = Object.fromEntries(counts.map((c) => [c.status, c._count]))
+  const activity: ActivityItem[] = [
+    ...recentRepairs.map((r) => ({
+      id: r.id,
+      kind: 'repair' as const,
+      title: `${r.customer.name} — ${r.device.manufacturer} ${r.device.model}`,
+      subtitle: r.referenceCode,
+      href: `/admin/repairs/${r.id}`,
+      badge: r.status.replace(/_/g, ' '),
+      createdAt: r.createdAt,
+    })),
+    ...recentLeads.map((l) => ({
+      id: l.id,
+      kind: 'lead' as const,
+      title: `${l.name} — ${l.type.replace(/_/g, ' ')}`,
+      subtitle: l.email,
+      href: '/admin/leads',
+      badge: l.status,
+      createdAt: l.createdAt,
+    })),
+    ...recentAccounts.map((a) => ({
+      id: a.id,
+      kind: 'business' as const,
+      title: `${a.shopName} (${a.accountType})`,
+      subtitle: a.contactName,
+      href: '/admin/leads',
+      badge: a.isApproved ? 'APPROVED' : 'PENDING',
+      createdAt: a.createdAt,
+    })),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 15)
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-bold text-lab-text">Repair Queue</h1>
+      <h1 className="text-xl font-bold text-lab-text">Dashboard</h1>
+      <p className="mt-1 text-sm text-lab-muted">
+        Everything coming in through the site, in one place. Signed in as {session.email}.
+      </p>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <StatCard
+          label="Open Repairs"
+          value={openRepairCount}
+          href="/admin/repairs"
+          tone={openRepairCount > 0 ? 'accent' : 'muted'}
+        />
+        <StatCard
+          label="New Inquiries"
+          value={newLeadCount}
+          href="/admin/leads"
+          tone={newLeadCount > 0 ? 'warn' : 'muted'}
+        />
+        <StatCard
+          label="Pending Trade Accounts"
+          value={pendingAccountCount}
+          href="/admin/leads"
+          tone={pendingAccountCount > 0 ? 'warn' : 'muted'}
+        />
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        <Link
-          href="/admin"
-          className={`rounded-sm border px-3 py-1 text-xs ${
-            !statusFilter ? 'border-lab-accent text-lab-accent' : 'border-lab-line text-lab-muted'
-          }`}
-        >
-          All ({repairs.length})
-        </Link>
-        {statusOrder.map((status) => (
-          <Link
-            key={status}
-            href={`/admin?status=${status}`}
-            className={`rounded-sm border px-3 py-1 text-xs ${
-              statusFilter === status
-                ? 'border-lab-accent text-lab-accent'
-                : 'border-lab-line text-lab-muted'
-            }`}
-          >
-            {status.replace(/_/g, ' ')} ({countMap[status] || 0})
-          </Link>
-        ))}
-      </div>
-
-      <div className="mt-8 overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-lab-line text-xs uppercase tracking-wide text-lab-muted">
-              <th className="py-3 pr-4">Reference</th>
-              <th className="py-3 pr-4">Customer</th>
-              <th className="py-3 pr-4">Equipment</th>
-              <th className="py-3 pr-4">Status</th>
-              <th className="py-3 pr-4">Submitted</th>
-            </tr>
-          </thead>
-          <tbody>
-            {repairs.map((repair) => (
-              <tr key={repair.id} className="border-b border-lab-line/60 hover:bg-lab-panel2">
-                <td className="py-3 pr-4">
-                  <Link href={`/admin/repairs/${repair.id}`} className="font-mono text-lab-accent">
-                    {repair.referenceCode}
-                  </Link>
-                </td>
-                <td className="py-3 pr-4 text-lab-text">{repair.customer.name}</td>
-                <td className="py-3 pr-4 text-lab-muted">
-                  {repair.device.manufacturer} {repair.device.model}
-                </td>
-                <td className="py-3 pr-4 text-lab-muted">{repair.status.replace(/_/g, ' ')}</td>
-                <td className="py-3 pr-4 text-lab-muted">
-                  {repair.createdAt.toLocaleDateString()}
-                </td>
+      <div className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">
+          Recent Activity
+        </h2>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-lab-line text-xs uppercase tracking-wide text-lab-muted">
+                <th className="py-3 pr-4">Type</th>
+                <th className="py-3 pr-4">Details</th>
+                <th className="py-3 pr-4">Status</th>
+                <th className="py-3 pr-4">When</th>
               </tr>
-            ))}
-            {repairs.length === 0 && (
-              <tr>
-                <td colSpan={5} className="py-10 text-center text-sm text-lab-muted">
-                  No repair requests yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {activity.map((item) => (
+                <tr
+                  key={`${item.kind}-${item.id}`}
+                  className="border-b border-lab-line/60 hover:bg-lab-panel2"
+                >
+                  <td className="py-3 pr-4 text-lab-muted">{kindLabel(item.kind)}</td>
+                  <td className="py-3 pr-4">
+                    <Link href={item.href} className="text-lab-text hover:text-lab-accent">
+                      {item.title}
+                    </Link>
+                    <div className="text-xs text-lab-muted">{item.subtitle}</div>
+                  </td>
+                  <td className="py-3 pr-4 text-lab-muted">{item.badge}</td>
+                  <td className="py-3 pr-4 text-lab-muted">{item.createdAt.toLocaleString()}</td>
+                </tr>
+              ))}
+              {activity.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center text-sm text-lab-muted">
+                    No activity yet — new repair requests, contact inquiries, and business account
+                    requests will show up here as soon as someone submits a form on the site.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
+  )
+}
+
+function kindLabel(kind: ActivityItem['kind']) {
+  if (kind === 'repair') return 'Repair'
+  if (kind === 'lead') return 'Inquiry'
+  return 'Trade Account'
+}
+
+function StatCard({
+  label,
+  value,
+  href,
+  tone,
+}: {
+  label: string
+  value: number
+  href: string
+  tone: 'accent' | 'warn' | 'muted'
+}) {
+  const toneClass =
+    tone === 'accent' ? 'text-lab-accent' : tone === 'warn' ? 'text-lab-warn' : 'text-lab-muted'
+
+  return (
+    <Link href={href} className="panel block p-6 hover:border-lab-accent/50">
+      <p className="text-xs font-semibold uppercase tracking-wide text-lab-muted">{label}</p>
+      <p className={`mt-2 text-3xl font-bold ${toneClass}`}>{value}</p>
+    </Link>
   )
 }
