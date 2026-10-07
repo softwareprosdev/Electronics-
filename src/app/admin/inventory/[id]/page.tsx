@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { InventoryTransactionForm } from '@/components/admin/InventoryTransactionForm'
+import { StorefrontListingForm } from '@/components/admin/StorefrontListingForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -130,11 +131,30 @@ export default async function InventoryItemDetailPage({
           </div>
         </div>
 
-        <div className="panel p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">
-            Record Transaction
-          </h2>
-          <InventoryTransactionForm itemId={item.id} />
+        <div className="space-y-6">
+          <div className="panel p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">
+              Record Transaction
+            </h2>
+            <InventoryTransactionForm itemId={item.id} />
+          </div>
+
+          <div className="panel p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-lab-accent">
+              Storefront Listing
+            </h2>
+            <div className="mt-3">
+              <StorefrontListingForm
+                itemId={item.id}
+                initialIsForSale={item.isForSale}
+                initialSlug={item.slug || ''}
+                initialPublicName={item.publicName || ''}
+                initialPublicDescription={item.publicDescription || ''}
+                initialImageUrl={item.imageUrl || ''}
+                initialSellingPriceCents={item.sellingPriceCents ? (item.sellingPriceCents / 100).toFixed(2) : ''}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

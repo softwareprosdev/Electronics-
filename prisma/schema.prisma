@@ -512,6 +512,15 @@ enum InventoryTransactionType {
   ADJUSTMENT
   SCRAP
   TRANSFER
+  SALE
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  CANCELLED
+  REFUNDED
 }
 
 model Supplier {
@@ -547,6 +556,17 @@ model InventoryItem {
   supplierId String?
 
   transactions InventoryTransaction[]
+  orderItems   OrderItem[]
+
+  // Storefront listing — an inventory item is also a sellable product when
+  // isForSale is true. Kept on the same record rather than a parallel
+  // "Product" model so a sale decrements the exact same quantityOnHand a
+  // repair technician sees, through the same InventoryTransaction ledger.
+  isForSale          Boolean @default(false)
+  slug               String? @unique
+  publicName         String?
+  publicDescription  String?
+  imageUrl           String?
 
   @@index([supplierId])
 }
@@ -562,6 +582,8 @@ model InventoryTransaction {
   quantity  Int
   repair    Repair?                  @relation(fields: [repairId], references: [id])
   repairId  String?
+  order     Order?                   @relation(fields: [orderId], references: [id])
+  orderId   String?
   notes     String?
   createdBy User?                    @relation(fields: [createdById], references: [id])
   createdById String?
@@ -569,6 +591,53 @@ model InventoryTransaction {
 
   @@index([itemId])
   @@index([repairId])
+  @@index([orderId])
+}
+
+// ---------------------------------------------------------------------------
+// Storefront
+// ---------------------------------------------------------------------------
+
+// A retail order for sellable InventoryItems — distinct from Invoice, which
+// bills a repair. Shares the same Stripe Checkout flow (src/lib/payments.ts)
+// but the webhook branches on metadata (orderId vs invoiceId) to decide
+// which side's fulfillment logic runs.
+model Order {
+  id                String      @id @default(cuid())
+  orderNumber       String      @unique
+  status            OrderStatus @default(PENDING)
+  customerName      String
+  customerEmail     String
+  shippingLine1     String
+  shippingLine2     String?
+  shippingCity      String
+  shippingState     String
+  shippingZip       String
+  shippingCountry   String      @default("US")
+  amountCents       Int
+  stripeSessionId   String?     @unique
+  trackingNumber    String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  items                 OrderItem[]
+  inventoryTransactions InventoryTransaction[]
+
+  @@index([status])
+}
+
+model OrderItem {
+  id              String        @id @default(cuid())
+  order           Order         @relation(fields: [orderId], references: [id])
+  orderId         String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  inventoryItemId String
+  quantity        Int
+  unitPriceCents  Int
+  createdAt       DateTime      @default(now())
+
+  @@index([orderId])
+  @@index([inventoryItemId])
 }
 
 // ---------------------------------------------------------------------------

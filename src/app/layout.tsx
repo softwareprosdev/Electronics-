@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer'
 import { AnnouncementBar } from '@/components/AnnouncementBar'
 import { MobileStickyCTA } from '@/components/MobileStickyCTA'
 import { Analytics } from '@/components/Analytics'
+import { CartProvider } from '@/components/store/CartContext'
 import { JsonLd } from '@/components/JsonLd'
 import { organizationJsonLd, websiteJsonLd } from '@/lib/seo'
 import { siteConfig } from '@/lib/site-config'
@@ -61,13 +62,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to main content
         </a>
-        <AnnouncementBar />
-        <Header />
-        <main id="main-content" className="flex-1 pb-16 md:pb-0">
-          {children}
-        </main>
-        <Footer />
-        <MobileStickyCTA />
+        <CartProvider>
+          <AnnouncementBar />
+          <Header />
+          <main id="main-content" className="flex-1 pb-16 md:pb-0">
+            {children}
+          </main>
+          <Footer />
+          <MobileStickyCTA />
+        </CartProvider>
         <Analytics />
       </body>
     </html>
