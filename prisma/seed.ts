@@ -203,6 +203,148 @@ async function main() {
     })
   }
 
+  const storeProducts = [
+    {
+      sku: 'CAP-TANT-100',
+      slug: 'smd-tantalum-capacitor-assortment-kit',
+      publicName: 'SMD Tantalum Capacitor Assortment Kit (100pc)',
+      description: 'SMD tantalum capacitor assortment, 100 pieces, common laptop/motherboard values',
+      publicDescription:
+        'The most common tantalum capacitor values used on laptop motherboards and power rails, in one kit. 100 pieces across the values we reach for most often on the bench.',
+      category: 'Passive Components',
+      costCents: 650,
+      sellingPriceCents: 1499,
+      quantityOnHand: 50,
+      minimumQuantity: 10,
+    },
+    {
+      sku: 'CAP-CER-1800',
+      slug: 'smd-ceramic-capacitor-assortment-kit',
+      publicName: 'SMD Ceramic Capacitor Assortment Kit (0402/0603/0805, 1800pc)',
+      description: 'SMD ceramic capacitor assortment kit, 0402/0603/0805 packages, 1800 pieces',
+      publicDescription:
+        'A full-range ceramic capacitor kit covering 0402, 0603, and 0805 packages — the three sizes you need for phone, laptop, and GPU board work.',
+      category: 'Passive Components',
+      costCents: 550,
+      sellingPriceCents: 1299,
+      quantityOnHand: 50,
+      minimumQuantity: 10,
+    },
+    {
+      sku: 'FPC-BATT-UNI',
+      slug: 'battery-connector-flex-cable-universal',
+      publicName: 'Battery Connector FPC Flex Cable (Universal)',
+      description: 'Universal battery connector flex cable for common phone board repairs',
+      publicDescription:
+        'A replacement flex cable for a damaged or corroded battery connector — one of the most common failure points we see on phone boards.',
+      category: 'Flex Cables',
+      costCents: 250,
+      sellingPriceCents: 699,
+      quantityOnHand: 100,
+      minimumQuantity: 20,
+    },
+    {
+      sku: 'USBC-PORT-UNI',
+      slug: 'usb-c-charging-port-flex-cable',
+      publicName: 'USB-C Charging Port Flex Cable (Universal)',
+      description: 'Universal USB-C charging port replacement flex cable for laptops and phones',
+      publicDescription:
+        'Replacement USB-C charging port flex cable for laptops and phones with a worn, loose, or non-charging port.',
+      category: 'Flex Cables',
+      costCents: 300,
+      sellingPriceCents: 899,
+      quantityOnHand: 80,
+      minimumQuantity: 15,
+    },
+    {
+      sku: 'MOSFET-KIT-20',
+      slug: 'laptop-power-mosfet-replacement-kit',
+      publicName: 'Laptop Power MOSFET Replacement Kit (20pc)',
+      description: 'Laptop power-rail MOSFET replacement kit, common failure parts, 20 pieces',
+      publicDescription:
+        'The MOSFETs we replace most often on laptop power rails — a dead-no-power board is frequently one failed MOSFET. 20-piece kit.',
+      category: 'Power Components',
+      costCents: 400,
+      sellingPriceCents: 999,
+      quantityOnHand: 60,
+      minimumQuantity: 15,
+    },
+    {
+      sku: 'HDMI-PS5-01',
+      slug: 'ps5-hdmi-port-replacement-module',
+      publicName: 'PS5 HDMI Port Replacement Module',
+      description: 'Replacement HDMI port module for PlayStation 5, no-signal repairs',
+      publicDescription:
+        'A direct-fit HDMI port replacement for PS5 consoles with a damaged port or no-signal fault.',
+      category: 'Repair Kits',
+      costCents: 500,
+      sellingPriceCents: 1199,
+      quantityOnHand: 40,
+      minimumQuantity: 10,
+    },
+    {
+      sku: 'DCJACK-UNI',
+      slug: 'universal-laptop-dc-power-jack',
+      publicName: 'Universal Laptop DC Power Jack (Barrel + USB-C)',
+      description: 'Universal laptop DC power jack replacement, barrel and USB-C styles',
+      publicDescription:
+        'A universal-fit DC power jack for laptops with a loose, broken, or intermittent charging connector.',
+      category: 'Power Components',
+      costCents: 250,
+      sellingPriceCents: 599,
+      quantityOnHand: 70,
+      minimumQuantity: 15,
+    },
+    {
+      sku: 'BGA-BALL-03MM',
+      slug: 'bga-reballing-solder-balls-0-3mm',
+      publicName: 'BGA Reballing Solder Balls Sn63/Pb37 (0.3mm)',
+      description: 'BGA reballing solder balls, Sn63/Pb37, 0.3mm diameter, ~250,000 balls',
+      publicDescription:
+        'Leaded Sn63/Pb37 solder balls at 0.3mm for BGA reballing work — GPU, chipset, and memory packages.',
+      category: 'Repair Kits',
+      costCents: 700,
+      sellingPriceCents: 1699,
+      quantityOnHand: 30,
+      minimumQuantity: 5,
+    },
+    {
+      sku: 'JOYCON-CHG-KIT',
+      slug: 'switch-joy-con-charging-contact-repair-kit',
+      publicName: 'Switch Joy-Con Charging Contact Repair Kit',
+      description: 'Nintendo Switch Joy-Con charging contact replacement repair kit',
+      publicDescription:
+        'Replacement charging contacts for Joy-Cons that have stopped charging in the dock — a common wear failure.',
+      category: 'Repair Kits',
+      costCents: 300,
+      sellingPriceCents: 799,
+      quantityOnHand: 90,
+      minimumQuantity: 20,
+    },
+    {
+      sku: 'VRAM-GDDR6-K4Z',
+      slug: 'gpu-gddr6-vram-replacement-chip',
+      publicName: 'GPU GDDR6 VRAM Replacement Chip (Samsung K4Z80325BC)',
+      description: 'GDDR6 VRAM replacement chip, Samsung K4Z80325BC, for GPU board repair',
+      publicDescription:
+        'A common GDDR6 memory chip used across many recent GPU boards — for VRAM-related artifacting or no-display repairs.',
+      category: 'Memory',
+      manufacturer: 'Samsung',
+      costCents: 600,
+      sellingPriceCents: 1399,
+      quantityOnHand: 25,
+      minimumQuantity: 5,
+    },
+  ]
+
+  for (const product of storeProducts) {
+    await prisma.inventoryItem.upsert({
+      where: { sku: product.sku },
+      update: {},
+      create: { ...product, isForSale: true },
+    })
+  }
+
   console.log('Seed complete.')
 }
 

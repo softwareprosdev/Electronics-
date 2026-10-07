@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 import { recordInvoicePayment } from '@/lib/invoicing'
+import { fulfillStoreOrder } from '@/lib/store-orders'
 
 export const runtime = 'nodejs'
 
@@ -35,15 +36,40 @@ export async function POST(request: Request) {
 
   const checkoutSession = event.data.object as Stripe.Checkout.Session
   const invoiceId = checkoutSession.metadata?.invoiceId
+  const isStoreOrder = !!checkoutSession.metadata?.cart
 
-  if (!invoiceId) {
-    console.warn('[stripe-webhook] checkout.session.completed with no invoiceId in metadata; ignoring.')
-    return NextResponse.json({ received: true, skipped: 'no-invoice-id' })
+  if (!invoiceId && !isStoreOrder) {
+    console.warn('[stripe-webhook] checkout.session.completed with no invoiceId or cart in metadata; ignoring.')
+    return NextResponse.json({ received: true, skipped: 'no-metadata' })
   }
 
   if (checkoutSession.payment_status !== 'paid') {
     console.log(`[stripe-webhook] session ${checkoutSession.id} completed but payment_status is not "paid"; ignoring.`)
     return NextResponse.json({ received: true, skipped: 'not-paid' })
+  }
+
+  if (isStoreOrder) {
+    try {
+      await fulfillStoreOrder(checkoutSession)
+    } catch (error) {
+      // A malformed/missing cart or shipping details can't be retried into
+      // succeeding, so acknowledge rather than let Stripe hammer this
+      // endpoint forever on a permanently-bad payload.
+      if (error instanceof Error && (error.message === 'NO_CART_METADATA' || error.message === 'MISSING_CUSTOMER_OR_SHIPPING_DETAILS')) {
+        console.error(`[stripe-webhook] store order for session=${checkoutSession.id} failed permanently: ${error.message}`)
+        return NextResponse.json({ received: true, skipped: error.message })
+      }
+      console.error('[stripe-webhook] failed to fulfill store order', error)
+      return NextResponse.json({ error: 'Failed to fulfill order' }, { status: 500 })
+    }
+    return NextResponse.json({ received: true })
+  }
+
+  if (!invoiceId) {
+    // Unreachable given the guard above (isStoreOrder is false here, so the
+    // earlier check guarantees invoiceId is set) — satisfies the type
+    // checker without an assertion.
+    return NextResponse.json({ received: true, skipped: 'no-invoice-id' })
   }
 
   const amountCents = checkoutSession.amount_total

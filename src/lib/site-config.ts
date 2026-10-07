@@ -57,6 +57,7 @@ export const primaryNav = [
   { label: 'Aviation', href: '/aviation-electronics-repair' },
   { label: 'Mining Hardware', href: '/asic-board-repair' },
   { label: 'Mail-In Repair', href: '/mail-in-repair' },
+  { label: 'Shop', href: '/store' },
   { label: 'Business Services', href: '/business-services' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },

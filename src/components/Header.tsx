@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { primaryNav, siteConfig } from '@/lib/site-config'
+import { CartCountBadge } from '@/components/store/CartCountBadge'
 
 export function Header() {
   return (
@@ -26,13 +27,14 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-5 xl:flex" aria-label="Primary">
-          {primaryNav.slice(0, 8).map((item) => (
+          {primaryNav.slice(0, 9).map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-xs font-medium uppercase tracking-wide text-lab-muted transition hover:text-lab-accent"
+              className="flex items-center text-xs font-medium uppercase tracking-wide text-lab-muted transition hover:text-lab-accent"
             >
               {item.label}
+              {item.href === '/store' && <CartCountBadge />}
             </Link>
           ))}
         </nav>
